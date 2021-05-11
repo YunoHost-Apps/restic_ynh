@@ -2,13 +2,8 @@
 
 set -e
 
-RESTIC_SERVER=$(yunohost app setting {{ app }} server)
-RESTIC_SERVER_PORT=$(yunohost app setting {{ app }} port)
-RESTIC_SERVER_USER=$(yunohost app setting {{ app }} ssh_user)
-RESTIC_PATH=$(yunohost app setting {{ app }} backup_path)
-
+RESTIC_REPOSITORY_BASE=$(yunohost app setting {{ app }} repository)
 RESTIC_PASSWORD="$(yunohost app setting {{ app }} passphrase)"
-RESTIC_REPOSITORY_BASE=sftp://$RESTIC_SERVER_USER@$RESTIC_SERVER:$RESTIC_SERVER_PORT/$RESTIC_PATH/
 
 RESTIC_COMMAND=/usr/local/bin/{{ app }}
 

@@ -1,12 +1,12 @@
 {
-  "name": "Restic",
-  "id": "restic",
+  "name": "Restic for all",
+  "id": "restic-pbe",
   "packaging_format": 1,
   "description": {
     "en": "Backup your server with restic.",
     "fr": "Sauvegardez votre serveur avec restic."
   },
-  "version": "0.12.0~ynh9",
+  "version": "0.13.0~pbe1",
   "url": "https://restic.net/",
   "license": "BSD-2-Clause",
   "maintainer": {
@@ -22,54 +22,17 @@
   "arguments": {
     "install" : [
       {
-        "name": "server",
+        "name": "repository",
         "type": "string",
         "ask": {
-          "en": "Indicate the server where you want put your backups",
-          "fr": "Indiquez le serveur où vous voulez faire vos sauvegardes"
+          "en": "Indicate the Restic repository where you want to put your backups",
+          "fr": "Indiquez le repository Restic où vous voulez faire vos sauvegardes"
         },
         "help":{
-          "en": "IP address or resolvable hostname of your destination server",
-          "fr": "Adresse IP ou nom résolvable de votre serveur de destination"
+          "en": "Un repository Restic peut être un serveur SFTP, une cible rclone, etc",
+          "fr": "Un repository Restic peut être un serveur SFTP, une cible rclone, etc"
         },
-        "example": "example.com"
-      },
-      {
-        "name": "port",
-        "type": "string",
-        "ask": {
-          "en": "sftp port of your server",
-          "fr": "Le port sftp de votre serveur"
-        },
-        "help":{
-          "en": "Listening port of your sftp or ssh server. The default value is 22",
-          "fr": "Le port d'écoute de votre serveur sftp ou ssh. La valeur par défaut est 22"
-        },
-        "example": "22",
-        "default": "22"
-      },
-      {
-        "name": "backup_path",
-        "type": "string",
-        "ask": {
-          "en": "The directory where you want your backup repositories to be created in",
-          "fr": "Le répertoire dans lequel les dépôts restic seront créés"
-        },
-        "help":{
-          "en": "A complete or relative path to an existing directory on the remote server writable by the remote backup user. Defaults to the login directory",
-          "fr": "Un chemin complet ou relatif vers un répertoire existant sur le serveur distant et accessible en écriture au compte utilisé pour la sauvegarde. Répertoire d'accueil par défaut"
-        },
-        "example": "./backups",
-    "default": "."
-      },
-      {
-        "name": "ssh_user",
-        "type": "string",
-        "ask": {
-          "en": "Indicate the ssh user to use to connect on this server",
-          "fr": "Indiquez l'utilisateur ssh à utiliser pour se connecter au serveur"
-        },
-        "example": "john"
+        "example": "sftp://user@example.com:1234/path/"
       },
       {
         "name": "passphrase",
@@ -78,6 +41,15 @@
           "en": "Indicate a strong passphrase, that you will keep preciously if you want to be able to use your backups",
           "fr": "Indiquez une phrase de passe forte que vous garderez précieusement si vous voulez être en mesure d'utiliser vos sauvegardes"
         }
+      },
+      {
+        "name": "generate_ssh_key",
+        "type": "boolean",
+        "ask": {
+          "en": "Would you like to generate a SSH key? This is useful if you want to save on a SFTP repository.",
+          "fr": "Souhaitez-vous générer une clé SSH ? C'est utile si vous désirez utiliser SFTP comme méthode de sauvegarde."
+        },
+        "default": true
       },
       {
         "name": "conf",

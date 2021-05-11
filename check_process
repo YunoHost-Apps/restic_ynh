@@ -1,11 +1,8 @@
 ;; Test complet
 ; Manifest
-	server="dst.domain.tld"
-	ssh_user="sam"
+	repository="sftp://sam@dst.domain.tld:2222/src.domain.tld/"
 	passphrase="APassphrase"
 	conf=1
-	port=2222
-	backup_path=src.domain.tld
 	data=1
 	app="all"
 	allow_extra_space_use=1
