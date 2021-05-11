@@ -156,7 +156,7 @@ ynh_use_logrotate --logfile=/var/log/restic_backup_${app}.err
 ynh_use_logrotate --logfile=/var/log/restic_check_${app}.log
 ynh_use_logrotate --logfile=/var/log/restic_check_${app}.err
 
-if [ "${generate_ssh_key}" == "true" ]; then
+if [ "${generate_ssh_key}" = "true" ]; then
 
   #=================================================
   # UPGRADE SSH CONFIG
