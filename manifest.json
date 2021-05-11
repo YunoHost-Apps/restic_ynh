@@ -1,12 +1,12 @@
 {
   "name": "Restic for all",
-  "id": "restic-pbe",
+  "id": "restic",
   "packaging_format": 1,
   "description": {
     "en": "Backup your server with restic.",
     "fr": "Sauvegardez votre serveur avec restic."
   },
-  "version": "0.13.0~pbe1",
+  "version": "0.12.0~ynh9",
   "url": "https://restic.net/",
   "license": "BSD-2-Clause",
   "maintainer": {
