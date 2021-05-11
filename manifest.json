@@ -49,7 +49,7 @@
           "en": "Would you like to generate a SSH key? This is useful if you want to save on a SFTP repository.",
           "fr": "Souhaitez-vous générer une clé SSH ? C'est utile si vous désirez utiliser SFTP comme méthode de sauvegarde."
         },
-        "default": true
+        "default": false
       },
       {
         "name": "conf",
