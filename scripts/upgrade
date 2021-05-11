@@ -17,7 +17,6 @@ export app=$YNH_APP_INSTANCE_NAME
 export final_path="/opt/yunohost/${app}"
 export repository=$(ynh_app_setting_get $app repository)
 export passphrase=$(ynh_app_setting_get $app passphrase)
-export generate_ssh_key=$(ynh_app_setting_get $app generate_ssh_key)
 export on_calendar=$(ynh_app_setting_get $app on_calendar)
 export check_on_calendar=$(ynh_app_setting_get $app check_on_calendar)
 export check_read_data_on_calendar=$(ynh_app_setting_get $app check_read_data_on_calendar)
@@ -155,36 +154,3 @@ ynh_use_logrotate --logfile=/var/log/restic_backup_${app}.log
 ynh_use_logrotate --logfile=/var/log/restic_backup_${app}.err
 ynh_use_logrotate --logfile=/var/log/restic_check_${app}.log
 ynh_use_logrotate --logfile=/var/log/restic_check_${app}.err
-
-if [ "${generate_ssh_key}" = "true" ]; then
-
-  #=================================================
-  # UPGRADE SSH CONFIG
-  #=================================================
-
-  # old versions did not have delimiters in ~/.ssh/config
-  # making removal in multi-instance cases break the remaining
-  # instances.
-  # So we need to add the delimiters if they are missing
-  set +o errexit
-  set +o nounset
-  grep -q "begin ${app}" ${ssh_dir}/config
-  missing_delimiters="$?"
-  if [ "$missing_delimiters" -eq 1 ];then
-    # did not find delimiters so removing old configuration
-    sed -e "/Host ${server}/,+6d" ${ssh_dir}/config -i || true
-    cat << EOCONF >> ${ssh_dir}/config
-  # begin $app ssh config
-  Host ${server}
-    Hostname ${server}
-    Port ${port}
-    User ${ssh_user}
-    IdentityFile ${private_key}
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
-  # end $app ssh config
-EOCONF
-  fi
-  ynh_script_progression --message="End of upgrade process" --last
-
-fi

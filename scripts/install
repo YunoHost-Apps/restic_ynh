@@ -23,12 +23,12 @@ export app=$YNH_APP_INSTANCE_NAME
 export final_path="/opt/yunohost/${app}"
 
 # Retrieve arguments
-ynh_export repository passphrase generate_ssh_key on_calendar check_on_calendar check_read_data_on_calendar conf data apps allow_extra_space_use
+ynh_export repository passphrase on_calendar check_on_calendar check_read_data_on_calendar conf data apps allow_extra_space_use
 
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
-ynh_save_args repository passphrase generate_ssh_key on_calendar check_on_calendar check_read_data_on_calendar conf data apps allow_extra_space_use
+ynh_save_args repository passphrase on_calendar check_on_calendar check_read_data_on_calendar conf data apps allow_extra_space_use
 
 #=================================================
 # INSTALL RESTIC
@@ -114,65 +114,3 @@ ynh_use_logrotate --logfile=/var/log/restic_backup_${app}.log
 ynh_use_logrotate --logfile=/var/log/restic_backup_${app}.err
 ynh_use_logrotate --logfile=/var/log/restic_check_${app}.log
 ynh_use_logrotate --logfile=/var/log/restic_check_${app}.err
-
-if [ "${generate_ssh_key}" = "true" ]; then
-
-  #=================================================
-  # GENERATE SSH KEY
-  #=================================================
-  ynh_script_progression --message="Generating private key"
-  ssh_dir="/root/.ssh"
-  if [ ! -d "${ssh_dir}" ];then
-    mkdir -p "${ssh_dir}"
-  fi
-  private_key="${ssh_dir}/id_${app}_ed25519"
-  test -f $private_key || ssh-keygen -q -t ed25519 -N "" -f $private_key
-
-  #=================================================
-  # GENERATE SSH CONFIG
-  #=================================================
-  ynh_script_progression --message="Generating ssh config for ${app} server ${server}"
-  grep -q "${app}" ${ssh_dir}/config 2>/dev/null || cat << EOCONF >> ${ssh_dir}/config
-  # begin $app ssh config
-  Host ${server}
-    Hostname ${server}
-    Port ${port}
-    User ${ssh_user}
-    IdentityFile ${private_key}
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
-  # end $app ssh config
-EOCONF
-
-  #=================================================
-  # Display key
-  #=================================================
-
-  ynh_script_progression --message="You should now allow the following public key for user ${ssh_user} on server ${server}:
-  $(cat ${private_key}.pub)"
-
-
-  #=================================================
-  # SEND A README FOR THE ADMIN
-  #=================================================
-  ynh_script_progression --message="Sending post-installation instructions to admin" --last
-  ynh_print_OFF
-  message="You should now allow the following public key for user ${ssh_user} on server ${server}:
-  $(cat ${private_key}.pub)
-
-  Do so by running those commands on ${server} with user ${ssh_user}:
-
-  mkdir ~/.ssh 2>/dev/null
-  touch ~/.ssh/authorized_keys
-  chmod u=rw,go= ~/.ssh/authorized_keys
-  cat << EOPKEY >> ~/.ssh/authorized_keys
-  $(cat ${private_key}.pub)
-EOPKEY
-
-  $(if [ "$backup_path" != "./" ];then echo "Also make sure ${backup_path} exists and is writable by ${ssh_user}";fi)
-
-  If you're facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/restic_ynh"
-
-  ynh_send_readme_to_admin "$message" "root"
-  ynh_print_ON
-fi
