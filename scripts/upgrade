@@ -76,6 +76,7 @@ cat > /tmp/${app}_sudoer << EOSUDOER
 ${app} ALL = (root) NOPASSWD: /usr/bin/yunohost*, /bin/journalctl*, /usr/bin/find /etc/yunohost/apps -name backup, ${final_path}/check_method_${app}
 EOSUDOER
 visudo -cf /tmp/${app}_sudoer && mv /tmp/${app}_sudoer /etc/sudoers.d/${app}
+chmod 644 /etc/sudoers.d/${app}
 ynh_script_progression --message="Move ssh keys from root to ${app} user's home"
 ynh_script_progression --message="Generate ssh config"
 set +o errexit
@@ -98,6 +99,7 @@ if [ "$missing_conf" -eq "1" ];then
     UserKnownHostsFile /dev/null
   # end $app ssh config
 EOCONF
+chmod 700 ${ssh_dir}/config
 fi
 chown -R ${app}: /home/${app}
 

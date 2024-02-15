@@ -55,6 +55,7 @@ cat > /tmp/${app}_sudoer << EOSUDOER
 ${app} ALL = (root) NOPASSWD: /usr/bin/yunohost*, /bin/journalctl*, /usr/bin/find /etc/yunohost/apps -name backup, ${final_path}/check_method_${app}
 EOSUDOER
 visudo -cf /tmp/${app}_sudoer && mv /tmp/${app}_sudoer /etc/sudoers.d/${app}
+chmod 644 /etc/sudoers.d/${app}
 
 #=================================================
 # ACTIVATE BACKUP METHODS
@@ -158,6 +159,7 @@ Host ${server}
   UserKnownHostsFile /dev/null
 # end $app ssh config
 EOCONF
+chmod 700 ${ssh_dir}/config
 
 #=================================================
 # Display key
