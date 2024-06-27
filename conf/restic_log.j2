@@ -4,6 +4,20 @@ set -u
 invocation_id=$(systemctl show -p InvocationID --value {{ app }}.service)
 hostname=$(hostname)
 subject="YunoHost Restic backup log on ${hostname}"
+
+
+sudo /bin/journalctl _SYSTEMD_INVOCATION_ID=${invocation_id} | grep "The operation '.*' could not be completed."
+if [ "$?" -eq 0 ];then
+  yuno_log_name=$(sudo /bin/journalctl -u {{ app }} | grep -oP "[0-9]{8}-[0-9]{6}-[^']+")
+  sudo /bin/journalctl _SYSTEMD_INVOCATION_ID=${invocation_id} > /tmp/journalctl.log
+  subject="[ERROR] Unexpected error during Yunohost Restic backup"
+  body="an unexpected error occured during backup please find attached journalctl. \
+  You can also look at yunohost logs ($yuno_log_name) or with the following command line : yunohost logs show $yuno_log_name"
+  echo "$body" | mail -s "$subject" -A /tmp/journalctl.log root
+  rm /tmp/journalctl.log
+  exit 1
+fi
+
 backup_results=$(sudo /bin/journalctl _SYSTEMD_INVOCATION_ID=${invocation_id} | grep -oP '(?<=    )[a-zA-Z_-]+: \w+')
 echo ${backup_results} | grep -iqE 'error|fail'
 if [ "$?" -eq 0 ];then
