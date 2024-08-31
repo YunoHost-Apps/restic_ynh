@@ -1,2 +1,5 @@
 *.sw*
 .vagrant
+*~
+*.sw[op]
+.DS_Store

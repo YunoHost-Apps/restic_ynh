@@ -1,13 +1,12 @@
 #!/bin/bash
 
 #=================================================
-# COMMON VARIABLES
+# COMMON VARIABLES AND CUSTOM HELPERS
 #=================================================
 
 RESTIC_VERSION="0.16.2"
 
 systemd_services_suffixes=( "" "_check" "_check_read_data" )
-
 
 _gen_and_save_public_key() {
     public_key=""
@@ -20,7 +19,7 @@ _gen_and_save_public_key() {
         public_key=$(cat "$private_key.pub")
     fi
 
-    ynh_app_setting_set --app="$app" --key=public_key --value="$public_key"
+    ynh_app_setting_set --key=public_key --value="$public_key"
 }
 
 _set_ssh_config() {
@@ -42,14 +41,13 @@ EOCONF
 
 }
 
-
 #=================================================
 # COMMON HELPERS
 #=================================================
 
-_ynh_add_config_j2() {
+_ynh_config_add_j2() {
     # Declare an array to define the options of this helper.
-    local legacy_args=tdv
+    #REMOVEME? local legacy_args=tdv
     local -A args_array=([t]=template= [d]=destination=)
     local template
     local destination
@@ -62,10 +60,10 @@ _ynh_add_config_j2() {
     elif [ -f "$template" ]; then
         template_path=$template
     else
-        ynh_die --message="The provided template $template doesn't exist"
+        ynh_die "The provided template $template doesn't exist"
     fi
 
-    ynh_backup_if_checksum_is_different --file="$destination"
+    ynh_backup_if_checksum_is_different "$destination"
 
     # Make sure to set the permissions before we copy the file
     # This is to cover a case where an attacker could have
@@ -75,9 +73,9 @@ _ynh_add_config_j2() {
     chown root:root $destination
     chmod 640 $destination
 
-    ynh_render_template "$template_path" "$destination"
+    ynh_config_add --jinja "$template_path" "$destination"
 
     _ynh_apply_default_permissions $destination
 
-    ynh_store_file_checksum --file="$destination"
+    ynh_store_file_checksum "$destination"
 }

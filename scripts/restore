@@ -11,47 +11,46 @@ source /usr/share/yunohost/helpers
 #=================================================
 # RESTORE THE APP MAIN DIR
 #=================================================
-ynh_script_progression --message="Restoring the app main directory..." --weight=1
+ynh_script_progression "Restoring the app main directory..."
 
-ynh_restore_file --origin_path="$install_dir"
+ynh_restore "$install_dir"
 
 # ynh_setup_source --source_id=main --dest_dir="$install_dir"
 # chmod +x "$install_dir/restic"
 
 _gen_and_save_public_key
 
-chown -R "$app:$app" "$install_dir"
-
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R "$app:$app" "$install_dir"
 #=================================================
 # ACTIVATE BACKUP METHODS
 #=================================================
-ynh_script_progression --message="Setting up backup method..." --weight=1
+ynh_script_progression "Setting up backup method..."
 
 mkdir -p /etc/yunohost/hooks.d/backup
 mkdir -p /etc/yunohost/hooks.d/backup_method
 mkdir -p /usr/share/yunohost/backup_method
 
-ynh_restore_file --origin_path="/etc/yunohost/hooks.d/backup_method/05-${app}_app"
+ynh_restore "/etc/yunohost/hooks.d/backup_method/05-${app}_app"
 chmod go=--- "/etc/yunohost/hooks.d/backup_method/05-${app}_app"
 
 #=================================================
 # RESTORE SYSTEM CONFIGURATIONS
 #=================================================
-ynh_script_progression --message="Restoring system configurations related to $app..." --weight=1
+ynh_script_progression "Restoring system configurations related to $app..."
 
-ynh_restore_file --origin_path="/etc/sudoers.d/$app"
-chown root:root "/etc/sudoers.d/$app"
+ynh_restore "/etc/sudoers.d/$app"
+#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown root:root "/etc/sudoers.d/$app"
 
-ynh_restore_file --origin_path="/root/.ssh/id_${app}_ed25519"
-ynh_restore_file --origin_path="/root/.ssh/id_${app}_ed25519.pub"
+ynh_restore "/root/.ssh/id_${app}_ed25519"
+ynh_restore "/root/.ssh/id_${app}_ed25519.pub"
 # FIXME: restore the .ssh/config instead?
 _set_ssh_config
 
 for suffix in "${systemd_services_suffixes[@]}"; do
-    ynh_restore_file --origin_path="/etc/systemd/system/$app$suffix.timer"
-    ynh_restore_file --origin_path="/etc/systemd/system/$app$suffix.service"
+    ynh_restore "/etc/systemd/system/$app$suffix.timer"
+    ynh_restore "/etc/systemd/system/$app$suffix.service"
 	systemctl enable --quiet "$app$suffix.timer"
-	ynh_systemd_action --service_name="$app$suffix.timer" --action="start"
+	ynh_systemctl --service="$app$suffix.timer" --action="start"
 
     yunohost service add "$app$suffix" --description="Restic backup program ($app$suffix)" \
         --test_status="systemctl show $app$suffix.service  -p ActiveState --value | grep -v failed"
@@ -61,4 +60,4 @@ done
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Restoration completed for $app"
+ynh_script_progression "Restoration completed for $app"
