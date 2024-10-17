@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -23,7 +19,6 @@ for suffix in "${systemd_services_suffixes[@]}"; do
     ynh_safe_rm "/etc/systemd/system/$app$suffix.timer"
 done
 
-# Remove the app-specific logrotate config
 ynh_config_remove_logrotate
 
 # Remove sudoers

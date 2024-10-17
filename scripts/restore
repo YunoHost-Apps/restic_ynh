@@ -1,10 +1,5 @@
 #!/bin/bash
 
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
-# Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
 source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
@@ -20,7 +15,8 @@ ynh_restore "$install_dir"
 
 _gen_and_save_public_key
 
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R "$app:$app" "$install_dir"
+chown -R "$app:$app" "$install_dir"
+
 #=================================================
 # ACTIVATE BACKUP METHODS
 #=================================================
@@ -39,7 +35,7 @@ chmod go=--- "/etc/yunohost/hooks.d/backup_method/05-${app}_app"
 ynh_script_progression "Restoring system configurations related to $app..."
 
 ynh_restore "/etc/sudoers.d/$app"
-#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown root:root "/etc/sudoers.d/$app"
+chown root:root "/etc/sudoers.d/$app"
 
 ynh_restore "/root/.ssh/id_${app}_ed25519"
 ynh_restore "/root/.ssh/id_${app}_ed25519.pub"

@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -56,6 +52,7 @@ fi
 ynh_script_progression "Installing Restic..."
 
 ynh_setup_source --source_id=main --dest_dir="$install_dir"
+
 chmod +x "$install_dir/restic"
 
 # This function will only create it if required
@@ -96,7 +93,8 @@ chmod u+x "$install_dir/restic_log"
 _ynh_config_add_j2 --template="restic_check_log.j2" --destination="$install_dir/restic_check_log"
 chmod u+x "$install_dir/restic_check_log"
 
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R "$app:$app" "$install_dir"
+chown -R "$app:$app" "$install_dir"
+
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
@@ -115,7 +113,7 @@ for suffix in "${systemd_services_suffixes[@]}"; do
 done
 
 ynh_config_add --template="sudoer" --destination="/etc/sudoers.d/$app"
-#REMOVEME? Assuming the file is setup using ynh_config_add, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown root:root "/etc/sudoers.d/$app"
+chown root:root "/etc/sudoers.d/$app"
 
 ynh_config_add_logrotate "/var/log/restic_backup_${app}.log"
 ynh_config_add_logrotate "/var/log/restic_backup_${app}.err"
