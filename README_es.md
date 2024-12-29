@@ -20,7 +20,7 @@ A [Restic](https://restic.net/) integration to backup your YunoHost server to an
 
 ### Features
 
-- backup data to remote storages (support for different types of storage, including S3)
+- backup data to remote storages (support for different types of storage: currently SFTP, S3 is planned)
 - deduplication and compression of files, which makes it possible to keep many previous copies
 - data encryption, which allows to store data at a third party
 
