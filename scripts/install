@@ -20,6 +20,7 @@ ynh_app_setting_set --app=$app --key=passphrase --value="$passphrase"
 ynh_script_progression --message="Installing Restic..." --weight=7
 
 ynh_setup_source --source_id=main --dest_dir="$install_dir"
+bunzip2 -d -f /var/www/restic/restic.bz2
 chmod +x "$install_dir/restic"
 
 _gen_and_save_public_key
