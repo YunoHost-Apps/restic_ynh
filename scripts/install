@@ -46,6 +46,7 @@ chmod u+x "$install_dir/backup-with-restic"
 
 ## Check method
 ynh_config_add --template="check_method" --destination="$install_dir/check_method"
+chmod u+x "$install_dir/check-with-restic"
 
 ynh_config_add --template="check-with-restic" --destination="$install_dir/check-with-restic"
 chmod u+x "$install_dir/check-with-restic"
@@ -67,7 +68,7 @@ ynh_script_progression "Adding system configurations (expecting 3 warnings)..."
 for suffix in "${systemd_services_suffixes[@]}"; do
     ynh_config_add_systemd --service="$app$suffix" --template="systemd$suffix.service"
     ynh_config_add --template="systemd$suffix.timer" --destination="/etc/systemd/system/$app$suffix.timer"
-    ynh_systemctl --service="${app}$suffix.service" --action="disable"
+    systemctl disable --quiet $app$suffix.service
     systemctl enable --quiet "${app}$suffix.timer"
     ynh_systemctl --service="${app}$suffix.timer" --action="start"
 

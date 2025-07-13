@@ -1,54 +1,69 @@
-#!/bin/bash
-LOCK_FILE=/tmp/__APP___backup.lock
-EXIT_PROPERLY() {
-  echo -e "\e[91m \e[1m"    # Shell in light red bold
-  echo -e "!!\n  Caught an interruption signal,  removing lock file...\n!!"
-  echo -e "\e[22m"    # Remove bold
+#!/usr/bin/env bash
 
-  rm $LOCK_FILE
-  exit 1
-}
-trap EXIT_PROPERLY 1 2 3 6 15
-if [ -f "$LOCK_FILE" ];then
-  echo "Backup already launched by process $(grep '.*' $LOCK_FILE), canceling this one" >&2
-  exit 1
-fi
-echo $$ > "$LOCK_FILE"
-if sudo yunohost -v | grep "version: 2." > /dev/null; then
-  ignore_apps="--ignore-apps"
-  ignore_system="--ignore-system"
-else
-  ignore_apps=""
-  ignore_system=""
-fi
+errors=""
+current_date=$(date +"%y%m%d_%H%M")
+log_file="/var/log/__APP__/${current_date}.log"
+err_file="/var/log/__APP__/${current_date}.err"
+mkdir -p "/var/log/__APP__"
+
 filter_hooks() {
-  ls /usr/share/yunohost/hooks/backup/ /etc/yunohost/hooks.d/backup/ | grep "\-$1_" | cut -d"-" -f2 | uniq
+    ls /usr/share/yunohost/hooks/backup/ /etc/yunohost/hooks.d/backup/ | grep "\-$1_" | cut -d"-" -f2 | uniq 2>> "$err_file"
 }
+
+sudo yunohost app setting __APP__ last_run -v "${current_date}"
+sudo yunohost app setting __APP__ state -v "ongoing"
 
 # Backup system part conf
 conf=$(sudo yunohost app setting __APP__ conf)
-if [ $conf -eq 1 ];then
-  sudo yunohost backup create $ignore_apps -n auto_conf --method __APP___app --system $(filter_hooks conf)
+if [[ "$conf" = "1" ]]; then
+    if ! sudo yunohost backup create -n auto_conf --method __APP___app --system $(filter_hooks conf) 2>> "$err_file" >> "$log_file" ; then
+        errors+="\nThe backup miserably failed to backup system configurations."
+    fi
 fi
 
 # Backup system data
 data=$(sudo yunohost app setting __APP__ data)
-if [ $data -eq 1 ];then
-  sudo yunohost backup create $ignore_apps -n auto_data --method __APP___app --system $(filter_hooks data)
+if [[ "$data" = "1" ]]; then
+    if ! sudo yunohost backup create -n auto_data --method __APP___app --system $(filter_hooks data) 2>> "$err_file" >> "$log_file" ; then
+        errors+="\nThe backup miserably failed to backup system data."
+    fi
 fi
 
 # Backup all apps independently
-apps=$(sudo yunohost app setting __APP__ apps)
-for app in $(sudo /usr/bin/find /etc/yunohost/apps -name backup | cut -d / -f 5); do
-  backup_app=false
-  for selected_app in $(echo $apps | tr "," " ");do
-    if [[ "$selected_app" == "$app" ]] || [ "$apps" = "all" ]; then
-      backup_app=true
-      break
+apps=$(sudo yunohost app setting __APP__ apps | tr -d ' ')
+for application in $(sudo ls /etc/yunohost/apps/); do
+
+    if ( [[ "$apps" =~ ^exclude: ]] && grep -wq "$application" <<< "$apps" ) ||
+       ( [[ "$apps" != "all" ]] && [[ ! "$apps" =~ ^exclude: ]]  && ! grep -wq "$application" <<< "$apps" );
+    then
+        continue
     fi
-  done
-  if [ "$backup_app" == "true" ];then
-    sudo yunohost backup create $ignore_system -n auto_$app --method __APP___app --apps $app
-  fi
+
+    if sudo test ! -f "/etc/yunohost/apps/$application/scripts/backup" ; then
+        errors+="\nWarning: The application $application has no backup script. This app won't be backed up."
+        continue
+    fi
+
+    if ! sudo yunohost backup create -n "auto_$application" --method __APP___app --apps $application 2>> "$err_file" >> "$log_file" ; then
+        errors+="\nThe backup miserably failed to backup $application application."
+    fi
 done
-rm "$LOCK_FILE"
+
+#=============================================
+# SEND MAIL TO NOTIFY ABOUT  FAILED OPERATIONS
+#=============================================
+
+partial_errors="$(cat "$log_file" | grep -E "Error|Skipped")"
+if [ -n "$partial_errors" ]; then
+    errors+="\nSome backup partially failed:\n$partial_errors"
+fi
+
+# Send mail on backup (partially) failed
+domain=$(hostname)
+repository="$(sudo yunohost app setting __APP__ repository)"
+if [[ -n "$errors" ]]; then
+    sudo yunohost app setting __APP__ state -v "failed"
+    cat <(echo -e "$errors\n\n\n") "$log_file" "$err_file" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "[restic] Backup failed from $domain onto $repository" root
+else
+    sudo yunohost app setting __APP__ state -v "successful"
+fi

@@ -1,46 +1,68 @@
-#!/bin/bash
-LOCK_FILE=/tmp/__APP___check.lock
-EXIT_PROPERLY() {
-  echo -e "\e[91m \e[1m"    # Shell in light red bold
-  echo -e "!!\n  Caught an interruption signal,  removing lock file...\n!!"
-  echo -e "\e[22m"    # Remove bold
+#!/usr/bin/env bash
 
-  rm $LOCK_FILE
-  exit 1
+errors=""
+current_date=$(date +"%y%m%d_%H%M")
+log_file="/var/log/__APP__/${current_date}.log"
+err_file="/var/log/__APP__/${current_date}.err"
+mkdir -p "/var/log/__APP__"
+
+filter_hooks() {
+    ls /usr/share/yunohost/hooks/backup/ /etc/yunohost/hooks.d/backup/ | grep "\-$1_" | cut -d"-" -f2 | uniq 2>> "$err_file"
 }
-trap EXIT_PROPERLY 1 2 3 6 15
-if [ -f "$LOCK_FILE" ];then
-  echo "Check already launched by process $(grep '.*' $LOCK_FILE), canceling this one" >&2
-  exit 1
-fi
-echo $$ > "$LOCK_FILE"
 
 CHECK_READ_DATA=${1:-0}
 
+
 # Check system part conf
 conf=$(sudo yunohost app setting __APP__ conf)
-if [ $conf -eq 1 ];then
-  sudo __INSTALL_DIR__/check_method auto_conf ${CHECK_READ_DATA}
+if [[ "$conf" = "1" ]]; then
+    if ! __INSTALL_DIR__/check_method auto_conf ${CHECK_READ_DATA} 2>> "$err_file" >> "$log_file" ; then
+        errors+="\nRestic miserably failed to check backups for system configurations."
+    fi
 fi
 
 # Check system data
 data=$(sudo yunohost app setting __APP__ data)
-if [ $data -eq 1 ];then
-  sudo __INSTALL_DIR__/check_method auto_data ${CHECK_READ_DATA}
+if [[ "$data" = "1" ]]; then
+    if ! sudo __INSTALL_DIR__/check_method auto_data ${CHECK_READ_DATA} 2>> "$err_file" >> "$log_file" ; then
+        errors+="\nRestic miserably failed to check backups for system data."
+    fi
 fi
 
 # Check all apps independently
-apps=$(sudo yunohost app setting __APP__ apps)
-for app in $(sudo /usr/bin/find /etc/yunohost/apps -name backup | cut -d / -f 5); do
-  check_app=false
-  for selected_app in $(echo $apps | tr "," " ");do
-    if [[ "$selected_app" == "$app" ]] || [ "$apps" = "all" ]; then
-      check_app=true
-      break
+apps=$(sudo yunohost app setting __APP__ apps | tr -d ' ')
+for application in $(sudo ls /etc/yunohost/apps/); do
+
+    if ( [[ "$apps" =~ ^exclude: ]] && grep -wq "$application" <<< "$apps" ) ||
+       ( [[ "$apps" != "all" ]] && [[ ! "$apps" =~ ^exclude: ]]  && ! grep -wq "$application" <<< "$apps" );
+    then
+        continue
     fi
-  done
-  if [ "$check_app" == "true" ];then
-    sudo __INSTALL_DIR__/check_method auto_${app} ${CHECK_READ_DATA}
-  fi
+
+    if sudo test ! -f "/etc/yunohost/apps/$application/scripts/backup" ; then
+        continue
+    fi
+
+    if ! sudo __INSTALL_DIR__/check_method auto_${app} ${CHECK_READ_DATA} 2>> "$err_file" >> "$log_file" ; then
+        errors+="\nRestic miserably failed to check backups for $application application."
+    fi
 done
-rm "$LOCK_FILE"
+
+#=============================================
+# SEND MAIL TO NOTIFY ABOUT  FAILED OPERATIONS
+#=============================================
+
+partial_errors="$(cat "$log_file" | grep -E "Error|Skipped")"
+if [ -n "$partial_errors" ]; then
+    errors+="\nSome backup checks partially failed:\n$partial_errors"
+fi
+
+# Send mail on backup (partially) failed
+domain=$(hostname)
+repository="$(sudo yunohost app setting __APP__ repository)"
+if [[ -n "$errors" ]]; then
+    sudo yunohost app setting __APP__ state -v "failed"
+    cat <(echo -e "$errors\n\n\n") "$log_file" "$err_file" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "[restic] Backup checks failed from $domain onto $repository" root
+else
+    sudo yunohost app setting __APP__ state -v "successful"
+fi
