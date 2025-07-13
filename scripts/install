@@ -46,7 +46,7 @@ chmod u+x "$install_dir/backup-with-restic"
 
 ## Check method
 ynh_config_add --template="check_method" --destination="$install_dir/check_method"
-chmod u+x "$install_dir/check-with-restic"
+chmod u+x "$install_dir/check_method"
 
 ynh_config_add --template="check-with-restic" --destination="$install_dir/check-with-restic"
 chmod u+x "$install_dir/check-with-restic"
