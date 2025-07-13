@@ -1,1 +1,1 @@
-__APP__ ALL=(root) NOPASSWD: /usr/bin/yunohost*, /bin/journalctl*, /usr/bin/find /etc/yunohost/apps -name backup, __INSTALL_DIR__/check_method___APP__
+__APP__ ALL=(root) NOPASSWD: /usr/bin/yunohost*, /bin/journalctl*, /usr/bin/find /etc/yunohost/apps -name backup, __INSTALL_DIR__/*

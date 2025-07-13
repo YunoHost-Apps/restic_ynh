@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -e
+
+RESTIC_REPOSITORY_BASE=$(yunohost app setting __APP__ repository)
+RESTIC_PASSWORD="$(yunohost app setting __APP__ passphrase)"
+RESTIC_COMMAND=__INSTALL_DIR__/restic
+
+do_check() {
+
+    local name="$1"
+    local check_read_data="$2"
+    export RESTIC_PASSWORD
+    export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
+    LOGFILE=/var/log/__APP__/check.log
+    ERRFILE=/var/log/__APP__/check-error.log
+    current_date=$(date --iso-8601=seconds)
+    echo -e "\n$current_date" | tee -a ${LOGFILE} | tee -a ${ERRFILE}
+    echo -e "BEGIN REPO CHECK: ${name}" | tee -a ${LOGFILE} | tee -a ${ERRFILE}
+    if [ "$check_read_data" -eq "1" ];then
+      $RESTIC_COMMAND check --read-data > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
+    else
+      $RESTIC_COMMAND check > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
+    fi
+    echo -e "END REPO CHECK: ${name}" | tee -a ${LOGFILE} | tee -a ${ERRFILE}
+    check_return_code="$?"
+    return "${check_return_code}"
+}
+
+name=$1
+check_read_data=${2:-0}
+
+do_check "${name}" "${check_read_data}"
+
+exit 0

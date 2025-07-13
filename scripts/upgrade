@@ -80,14 +80,15 @@ ynh_config_add --template="backup-with-restic" --destination="$install_dir/backu
 chmod u+x "$install_dir/backup-with-restic"
 
 ## Check method
-ynh_config_add --template="check_method" --destination="$install_dir/check_method_restic"
+ynh_config_add --template="check_method" --destination="$install_dir/check_method"
+chmod u+x "$install_dir/check_method"
 
-ynh_config_add --template="check-restic" --destination="$install_dir/check-restic"
-chmod u+x "$install_dir/check-restic"
+ynh_config_add --template="check-with-restic" --destination="$install_dir/check-with-restic"
+chmod u+x "$install_dir/check-with-restic"
 
 ## Backup log script
-ynh_config_add --template="restic_log" --destination="$install_dir/restic_log"
-chmod u+x "$install_dir/restic_log"
+ynh_config_add --template="restic_backup_log" --destination="$install_dir/restic_backup_log"
+chmod u+x "$install_dir/restic_backup_log"
 
 # Check log script
 ynh_config_add --template="restic_check_log" --destination="$install_dir/restic_check_log"
