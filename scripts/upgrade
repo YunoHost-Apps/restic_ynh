@@ -54,7 +54,7 @@ if [[ "$repository" = "" ]]; then
     backup_path=$(ynh_app_setting_get --key=backup_path)
     ssh_user=$(ynh_app_setting_get --key=ssh_user)
     
-    ynh_app_setting_set --key=repository --value="sftp://$user@$server:$port/$backup_path/"
+    ynh_app_setting_set --key=repository --value="sftp://$ssh_user@$server:$port/$backup_path/"
 fi
 
 
