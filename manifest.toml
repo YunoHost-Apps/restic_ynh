@@ -7,7 +7,7 @@ name = "Restic"
 description.en = "Backup your server with Restic"
 description.fr = "Sauvegardez votre serveur avec Restic"
 
-version = "0.12.0~ynh9"
+version = "0.16.2~ynh9"
 
 maintainers = ["Lionel Coupouchetty-Ramouchetty"]
 
@@ -20,9 +20,11 @@ code = "https://github.com/restic/restic"
 [integration]
 yunohost = ">= 11.2"
 architectures = "all"
-multi_instance = true
+multi_instance = false
+
 ldap = "not_relevant"
 sso = "not_relevant"
+
 disk = "50M"
 ram.build = "50M"
 ram.runtime = "50M"
