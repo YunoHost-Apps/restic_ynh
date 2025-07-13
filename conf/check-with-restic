@@ -7,7 +7,7 @@ err_file="/var/log/__APP__/${current_date}.err"
 mkdir -p "/var/log/__APP__"
 
 filter_hooks() {
-    ls /usr/share/yunohost/hooks/backup/ /etc/yunohost/hooks.d/backup/ | grep "\-$1_" | cut -d"-" -f2 | uniq 2>> "$err_file"
+    ls /usr/share/yunohost/hooks/backup/ | grep "\-$1_" | cut -d"-" -f2 | uniq 2>> "$err_file"
 }
 
 CHECK_READ_DATA=${1:-0}
