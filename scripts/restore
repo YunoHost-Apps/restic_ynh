@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ../settings/scripts/_common.sh
+source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
@@ -10,12 +10,7 @@ ynh_script_progression "Restoring the app main directory..."
 
 ynh_restore "$install_dir"
 
-# ynh_setup_source --source_id=main --dest_dir="$install_dir"
-# chmod +x "$install_dir/restic"
-
 _gen_and_save_public_key
-
-chown -R "$app:$app" "$install_dir"
 
 #=================================================
 # ACTIVATE BACKUP METHODS
@@ -39,8 +34,6 @@ chown root:root "/etc/sudoers.d/$app"
 
 ynh_restore "/root/.ssh/id_${app}_ed25519"
 ynh_restore "/root/.ssh/id_${app}_ed25519.pub"
-# FIXME: restore the .ssh/config instead?
-_set_ssh_config
 
 for suffix in "${systemd_services_suffixes[@]}"; do
     ynh_restore "/etc/systemd/system/$app$suffix.timer"

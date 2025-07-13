@@ -58,11 +58,6 @@ chmod +x "$install_dir/restic"
 # This function will only create it if required
 _gen_and_save_public_key
 
-# Set ssh config if it is missing
-if ! grep -q "begin $app" "/root/.ssh/config"; then
-    _set_ssh_config
-fi
-
 #=================================================
 # SETUP THE BACKUP METHOD
 #=================================================
