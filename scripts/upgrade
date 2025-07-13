@@ -93,14 +93,6 @@ chmod u+x "$install_dir/check_method"
 ynh_config_add --template="check-with-restic" --destination="$install_dir/check-with-restic"
 chmod u+x "$install_dir/check-with-restic"
 
-## Backup log script
-ynh_config_add --template="restic_backup_log" --destination="$install_dir/restic_backup_log"
-chmod u+x "$install_dir/restic_backup_log"
-
-# Check log script
-ynh_config_add --template="restic_check_log" --destination="$install_dir/restic_check_log"
-chmod u+x "$install_dir/restic_check_log"
-
 chown -R "$app:$app" "$install_dir"
 
 #=================================================
