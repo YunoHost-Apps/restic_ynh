@@ -5,15 +5,10 @@ set -e
 ###
 # Fetch information from YNH settings
 ###
-RESTIC_SERVER=$(yunohost app setting __APP__ server)
-RESTIC_SERVER_PORT=$(yunohost app setting __APP__ port)
-RESTIC_SERVER_USER=$(yunohost app setting __APP__ ssh_user)
-RESTIC_PATH=$(yunohost app setting __APP__ backup_path)
-
+RESTIC_REPOSITORY_BASE=$(yunohost app setting __APP__ repository)
 RESTIC_PASSWORD="$(yunohost app setting __APP__ passphrase)"
-RESTIC_REPOSITORY_BASE=sftp://$RESTIC_SERVER_USER@$RESTIC_SERVER:$RESTIC_SERVER_PORT/$RESTIC_PATH/
 
-RESTIC_COMMAND=__INSTALL_DIR__/__APP__
+RESTIC_COMMAND=__INSTALL_DIR__/restic
 LOGFILE=/var/log/restic_backup___APP__.log
 ERRFILE=/var/log/restic_backup___APP__.err
 

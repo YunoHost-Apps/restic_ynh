@@ -58,6 +58,11 @@ chmod u+x "$install_dir/restic_log"
 ynh_config_add --template="restic_check_log" --destination="$install_dir/restic_check_log"
 chmod u+x "$install_dir/restic_check_log"
 
+touch /var/log/restic_backup_${app}.log
+touch /var/log/restic_backup_${app}.err
+touch /var/log/restic_check_${app}.log
+touch /var/log/restic_check_${app}.err
+
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
