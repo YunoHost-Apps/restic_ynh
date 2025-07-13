@@ -1,46 +1,35 @@
 #!/bin/bash
-LOCK_FILE=/tmp/__APP___check.lock
-EXIT_PROPERLY() {
-  echo -e "\e[91m \e[1m"    # Shell in light red bold
-  echo -e "!!\n  Caught an interruption signal,  removing lock file...\n!!"
-  echo -e "\e[22m"    # Remove bold
 
-  rm $LOCK_FILE
-  exit 1
-}
-trap EXIT_PROPERLY 1 2 3 6 15
-if [ -f "$LOCK_FILE" ];then
-  echo "Check already launched by process $(grep '.*' $LOCK_FILE), canceling this one" >&2
-  exit 1
-fi
-echo $$ > "$LOCK_FILE"
+set -e
 
-CHECK_READ_DATA=${1:-0}
+RESTIC_REPOSITORY_BASE=$(yunohost app setting __APP__ repository)
+RESTIC_PASSWORD="$(yunohost app setting __APP__ passphrase)"
+RESTIC_COMMAND=__INSTALL_DIR__/restic
 
-# Check system part conf
-conf=$(sudo yunohost app setting __APP__ conf)
-if [ $conf -eq 1 ];then
-  sudo __INSTALL_DIR__/check_method auto_conf ${CHECK_READ_DATA}
-fi
+do_check() {
 
-# Check system data
-data=$(sudo yunohost app setting __APP__ data)
-if [ $data -eq 1 ];then
-  sudo __INSTALL_DIR__/check_method auto_data ${CHECK_READ_DATA}
-fi
-
-# Check all apps independently
-apps=$(sudo yunohost app setting __APP__ apps)
-for app in $(sudo /usr/bin/find /etc/yunohost/apps -name backup | cut -d / -f 5); do
-  check_app=false
-  for selected_app in $(echo $apps | tr "," " ");do
-    if [[ "$selected_app" == "$app" ]] || [ "$apps" = "all" ]; then
-      check_app=true
-      break
+    local name="$1"
+    local check_read_data="$2"
+    export RESTIC_PASSWORD
+    export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
+    LOGFILE=/var/log/__APP__/check.log
+    ERRFILE=/var/log/__APP__/check-error.log
+    current_date=$(date --iso-8601=seconds)
+    echo -e "\n$current_date" | tee -a ${LOGFILE} | tee -a ${ERRFILE}
+    echo -e "BEGIN REPO CHECK: ${name}" | tee -a ${LOGFILE} | tee -a ${ERRFILE}
+    if [ "$check_read_data" -eq "1" ];then
+      $RESTIC_COMMAND check --read-data > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
+    else
+      $RESTIC_COMMAND check > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
     fi
-  done
-  if [ "$check_app" == "true" ];then
-    sudo __INSTALL_DIR__/check_method auto_${app} ${CHECK_READ_DATA}
-  fi
-done
-rm "$LOCK_FILE"
+    echo -e "END REPO CHECK: ${name}" | tee -a ${LOGFILE} | tee -a ${ERRFILE}
+    check_return_code="$?"
+    return "${check_return_code}"
+}
+
+name=$1
+check_read_data=${2:-0}
+
+do_check "${name}" "${check_read_data}"
+
+exit 0

@@ -61,7 +61,7 @@ chmod u+x "$install_dir/restic_check_log"
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
-ynh_script_progression "Adding system configurations related to $app..."
+ynh_script_progression "Adding system configurations (expecting 3 warnings)..."
 
 # Systemd services and timers
 for suffix in "${systemd_services_suffixes[@]}"; do
