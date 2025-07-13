@@ -9,8 +9,8 @@ RESTIC_REPOSITORY_BASE=$(yunohost app setting __APP__ repository)
 RESTIC_PASSWORD="$(yunohost app setting __APP__ passphrase)"
 
 RESTIC_COMMAND=__INSTALL_DIR__/restic
-LOGFILE=/var/log/restic_backup___APP__.log
-ERRFILE=/var/log/restic_backup___APP__.err
+LOGFILE=/var/log/__APP__/backup.log
+ERRFILE=/var/log/__APP__/backup-error.log
 
 do_need_mount() {
     work_dir="$1"

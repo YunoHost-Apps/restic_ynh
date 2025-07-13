@@ -18,8 +18,8 @@ do_check() {
     local check_read_data="$2"
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
-    LOGFILE=/var/log/restic_check___APP__.log
-    ERRFILE=/var/log/restic_check___APP__.err
+    LOGFILE=/var/log/__APP__/check.log
+    ERRFILE=/var/log/__APP__/check-error.log
     current_date=$(date --iso-8601=seconds)
     echo -e "\n$current_date" | tee -a ${LOGFILE} | tee -a ${ERRFILE}
     echo -e "BEGIN REPO CHECK: ${name}" | tee -a ${LOGFILE} | tee -a ${ERRFILE}

@@ -58,11 +58,6 @@ chmod u+x "$install_dir/restic_log"
 ynh_config_add --template="restic_check_log" --destination="$install_dir/restic_check_log"
 chmod u+x "$install_dir/restic_check_log"
 
-touch /var/log/restic_backup_${app}.log
-touch /var/log/restic_backup_${app}.err
-touch /var/log/restic_check_${app}.log
-touch /var/log/restic_check_${app}.err
-
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
@@ -83,10 +78,7 @@ done
 ynh_config_add --template="sudoer" --destination="/etc/sudoers.d/$app"
 chown root:root "/etc/sudoers.d/$app"
 
-ynh_config_add_logrotate "/var/log/restic_backup_${app}.log"
-ynh_config_add_logrotate "/var/log/restic_backup_${app}.err"
-ynh_config_add_logrotate "/var/log/restic_check_${app}.log"
-ynh_config_add_logrotate "/var/log/restic_check_${app}.err"
+ynh_config_add_logrotate
 
 #=================================================
 # END OF SCRIPT

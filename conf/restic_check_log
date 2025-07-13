@@ -60,6 +60,6 @@ else
   subject="${subject} (SUCCESS)"
 fi
 
-parsed_log="$parsed_log\n\nTo get more detailed info check the log files /var/log/restic_check___APP__.log and /var/log/restic_check___APP__.err"
+parsed_log="$parsed_log\n\nTo get more detailed info check the log files /var/log/__APP__/check.log and /var/log/__APP__/check-error.log"
 
 echo -e "${parsed_log}" | mail -s "${subject}" root

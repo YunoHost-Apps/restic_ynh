@@ -72,11 +72,6 @@ mkdir -p /etc/yunohost/hooks.d/backup
 mkdir -p /etc/yunohost/hooks.d/backup_method
 mkdir -p /usr/share/yunohost/backup_method
 
-touch /var/log/restic_backup_${app}.log
-touch /var/log/restic_backup_${app}.err
-touch /var/log/restic_check_${app}.log
-touch /var/log/restic_check_${app}.err
-
 # Backup method
 ynh_config_add --template="backup_method" --destination="/etc/yunohost/hooks.d/backup_method/05-${app}_app"
 chmod go=--- "/etc/yunohost/hooks.d/backup_method/05-${app}_app"
@@ -120,10 +115,7 @@ done
 ynh_config_add --template="sudoer" --destination="/etc/sudoers.d/$app"
 chown root:root "/etc/sudoers.d/$app"
 
-ynh_config_add_logrotate "/var/log/restic_backup_${app}.log"
-ynh_config_add_logrotate "/var/log/restic_backup_${app}.err"
-ynh_config_add_logrotate "/var/log/restic_check_${app}.log"
-ynh_config_add_logrotate "/var/log/restic_check_${app}.err"
+ynh_config_add_logrotate
 
 #=================================================
 # END OF SCRIPT
