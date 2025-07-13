@@ -4,7 +4,7 @@
 # COMMON VARIABLES
 #=================================================
 
-RESTIC_VERSION="0.16.2"
+RESTIC_VERSION="0.18.0"
 
 systemd_services_suffixes=( "" "_check" "_check_read_data" )
 
