@@ -2,15 +2,15 @@
 
 set -e
 
-RESTIC_SERVER=$(yunohost app setting {{ app }} server)
-RESTIC_SERVER_PORT=$(yunohost app setting {{ app }} port)
-RESTIC_SERVER_USER=$(yunohost app setting {{ app }} ssh_user)
-RESTIC_PATH=$(yunohost app setting {{ app }} backup_path)
+RESTIC_SERVER=$(yunohost app setting __APP__ server)
+RESTIC_SERVER_PORT=$(yunohost app setting __APP__ port)
+RESTIC_SERVER_USER=$(yunohost app setting __APP__ ssh_user)
+RESTIC_PATH=$(yunohost app setting __APP__ backup_path)
 
-RESTIC_PASSWORD="$(yunohost app setting {{ app }} passphrase)"
+RESTIC_PASSWORD="$(yunohost app setting __APP__ passphrase)"
 RESTIC_REPOSITORY_BASE=sftp://$RESTIC_SERVER_USER@$RESTIC_SERVER:$RESTIC_SERVER_PORT/$RESTIC_PATH/
 
-RESTIC_COMMAND={{ install_dir }}/{{ app }}
+RESTIC_COMMAND=__INSTALL_DIR__/__APP__
 
 do_check() {
 
@@ -18,8 +18,8 @@ do_check() {
     local check_read_data="$2"
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
-    LOGFILE=/var/log/restic_check_{{ app }}.log
-    ERRFILE=/var/log/restic_check_{{ app }}.err
+    LOGFILE=/var/log/restic_check___APP__.log
+    ERRFILE=/var/log/restic_check___APP__.err
     current_date=$(date --iso-8601=seconds)
     echo -e "\n$current_date" | tee -a ${LOGFILE} | tee -a ${ERRFILE}
     echo -e "BEGIN REPO CHECK: ${name}" | tee -a ${LOGFILE} | tee -a ${ERRFILE}

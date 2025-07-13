@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=__INSTALL_DIR__/check-__APP__ "1"
-ExecStartPost=__INSTALL_DIR__/restic_check_log___APP__ 1
+ExecStart=__INSTALL_DIR__/check "1"
+ExecStartPost=__INSTALL_DIR__/restic_check_log 1
 User=__APP__
 Group=__APP__
 

@@ -46,10 +46,10 @@ COMPLETE_CHECK=${1:-0}
 hostname=$(hostname)
 if [ "$COMPLETE_CHECK" -eq "0" ];then
   subject="YunoHost Restic check log on ${hostname}"
-  invocation_id=$(systemctl show -p InvocationID --value {{ app }}_check.service)
+  invocation_id=$(systemctl show -p InvocationID --value __APP___check.service)
 else
   subject="YunoHost Restic complete check log on ${hostname}"
-  invocation_id=$(systemctl show -p InvocationID --value {{ app }}_check_read_data.service)
+  invocation_id=$(systemctl show -p InvocationID --value __APP___check_read_data.service)
 fi
 check_log=$(sudo /bin/journalctl _SYSTEMD_INVOCATION_ID=${invocation_id})
 parsed_log=$(parse_log "$check_log")
@@ -60,6 +60,6 @@ else
   subject="${subject} (SUCCESS)"
 fi
 
-parsed_log="$parsed_log\n\nTo get more detailed info check the log files /var/log/restic_check_{{ app }}.log and /var/log/restic_check_{{ app }}.err"
+parsed_log="$parsed_log\n\nTo get more detailed info check the log files /var/log/restic_check___APP__.log and /var/log/restic_check___APP__.err"
 
 echo -e "${parsed_log}" | mail -s "${subject}" root

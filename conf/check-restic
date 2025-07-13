@@ -1,5 +1,5 @@
 #!/bin/bash
-LOCK_FILE=/tmp/{{ app }}_check.lock
+LOCK_FILE=/tmp/__APP___check.lock
 EXIT_PROPERLY() {
   echo -e "\e[91m \e[1m"    # Shell in light red bold
   echo -e "!!\n  Caught an interruption signal,  removing lock file...\n!!"
@@ -18,19 +18,19 @@ echo $$ > "$LOCK_FILE"
 CHECK_READ_DATA=${1:-0}
 
 # Check system part conf
-conf=$(sudo yunohost app setting {{ app }} conf)
+conf=$(sudo yunohost app setting __APP__ conf)
 if [ $conf -eq 1 ];then
-  sudo {{install_dir}}/check_method_{{ app }} auto_conf ${CHECK_READ_DATA}
+  sudo __INSTALL_DIR__/check_method___APP__ auto_conf ${CHECK_READ_DATA}
 fi
 
 # Check system data
-data=$(sudo yunohost app setting {{ app }} data)
+data=$(sudo yunohost app setting __APP__ data)
 if [ $data -eq 1 ];then
-  sudo {{install_dir}}/check_method_{{ app }} auto_data ${CHECK_READ_DATA}
+  sudo __INSTALL_DIR__/check_method___APP__ auto_data ${CHECK_READ_DATA}
 fi
 
 # Check all apps independently
-apps=$(sudo yunohost app setting {{ app }} apps)
+apps=$(sudo yunohost app setting __APP__ apps)
 for app in $(sudo /usr/bin/find /etc/yunohost/apps -name backup | cut -d / -f 5); do
   check_app=false
   for selected_app in $(echo $apps | tr "," " ");do
@@ -40,7 +40,7 @@ for app in $(sudo /usr/bin/find /etc/yunohost/apps -name backup | cut -d / -f 5)
     fi
   done
   if [ "$check_app" == "true" ];then
-    sudo {{install_dir}}/check_method_{{ app }} auto_${app} ${CHECK_READ_DATA}
+    sudo __INSTALL_DIR__/check_method___APP__ auto_${app} ${CHECK_READ_DATA}
   fi
 done
 rm "$LOCK_FILE"
