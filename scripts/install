@@ -83,7 +83,6 @@ ynh_use_logrotate --logfile="/var/log/restic_backup_${app}.err"
 ynh_use_logrotate --logfile="/var/log/restic_check_${app}.log"
 ynh_use_logrotate --logfile="/var/log/restic_check_${app}.err"
 
-
 #=================================================
 # END OF SCRIPT
 #=================================================

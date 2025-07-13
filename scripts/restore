@@ -15,9 +15,6 @@ ynh_script_progression --message="Restoring the app main directory..." --weight=
 
 ynh_restore_file --origin_path="$install_dir"
 
-# ynh_setup_source --source_id=main --dest_dir="$install_dir"
-# chmod +x "$install_dir/restic"
-
 _gen_and_save_public_key
 
 chown -R "$app:$app" "$install_dir"

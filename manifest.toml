@@ -21,8 +21,10 @@ code = "https://github.com/restic/restic"
 yunohost = ">= 11.2"
 architectures = "all"
 multi_instance = true
+
 ldap = "not_relevant"
 sso = "not_relevant"
+
 disk = "50M"
 ram.build = "50M"
 ram.runtime = "50M"
@@ -39,8 +41,8 @@ ram.runtime = "50M"
     [install.port]
     ask.en = "sftp port of your server"
     ask.fr = "Le port sftp de votre serveur"
-    help.en = "Listening port of your sftp or ssh server. The default value is 22"
-    help.fr = "Le port d'écoute de votre serveur sftp ou ssh. La valeur par défaut est 22"
+    help.en = "Listening port of your SFTP or SSH server. The default value is 22"
+    help.fr = "Le port d'écoute de votre serveur SFTP ou SSH. La valeur par défaut est 22"
     type = "string"
     example = "22"
     default = "22"
@@ -66,26 +68,26 @@ ram.runtime = "50M"
     type = "password"
 
     [install.conf]
-    ask.en = "Would you like to backup your YunoHost configuration ?"
+    ask.en = "Would you like to backup your YunoHost configuration?"
     ask.fr = "Souhaitez-vous effectuer des sauvegardes des configurations du système YunoHost ?"
     type = "boolean"
     default = true
 
     [install.data]
-    ask.en = "Would you like to backup mails and user home directory ?"
+    ask.en = "Would you like to backup mails and user home directory?"
     ask.fr = "Souhaitez-vous effectuer des sauvegardes des mails et des répertoire des utilisateurs ?"
     type = "boolean"
     default = true
 
     [install.apps]
-    ask.en = "Which apps would you backup (list separated by comma or 'all') ?"
+    ask.en = "Which apps would you backup (list separated by comma or 'all')?"
     ask.fr = "Souhaitez-vous effectuer des sauvegardes de vos applications ?"
     type = "string"
     default = "all"
 
     [install.allow_extra_space_use]
     ask.en = "Allow backup method to temporarily use more space?"
-    ask.fr = "Permettre à la sauvegarde de consommer temporairement de l'espace supplémentaire?"
+    ask.fr = "Permettre à la sauvegarde de consommer temporairement de l'espace supplémentaire ?"
     help.en = "Some applications as Gitlab can't be backed up with the standard method and require extra space temporarily"
     help.fr = "Certaines applications comme Gitlab ne peuvent être sauvegardées avec la méthode standard et nécessitent d'utiliser plus d'espace disque temporairement"
     type = "boolean"
