@@ -47,7 +47,7 @@ if ! grep -q "begin ${app}" /root/.ssh/config; then
 fi
 
 # Retrieve repository
-repository=$(sudo yunohost app setting __APP__ repository)
+repository=$(ynh_app_setting_get --key=repository)
 if [[ "$repository" = "" ]]; then
     port=$(ynh_app_setting_get --key=port)
     server=$(ynh_app_setting_get --key=server)
