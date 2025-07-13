@@ -15,7 +15,7 @@ for suffix in "${systemd_services_suffixes[@]}"; do
     fi
     ynh_systemctl --service="$app$suffix.timer" --action="stop"
     ynh_systemctl --service="$app$suffix.timer" --action="disable"
-    ynh_config_remove_systemd"$app$suffix"
+    ynh_config_remove_systemd "$app$suffix"
     ynh_safe_rm "/etc/systemd/system/$app$suffix.timer"
 done
 
