@@ -16,7 +16,7 @@ CHECK_READ_DATA=${1:-0}
 # Check system part conf
 conf=$(sudo yunohost app setting __APP__ conf)
 if [[ "$conf" = "1" ]]; then
-    if ! __INSTALL_DIR__/check_method auto_conf ${CHECK_READ_DATA} 2>> "$err_file" >> "$log_file" ; then
+    if ! sudo __INSTALL_DIR__/check_method auto_conf ${CHECK_READ_DATA} 2>> "$err_file" >> "$log_file" ; then
         errors+="\nRestic miserably failed to check backups for system configurations."
     fi
 fi
@@ -43,7 +43,7 @@ for application in $(sudo ls /etc/yunohost/apps/); do
         continue
     fi
 
-    if ! sudo __INSTALL_DIR__/check_method auto_${app} ${CHECK_READ_DATA} 2>> "$err_file" >> "$log_file" ; then
+    if ! sudo __INSTALL_DIR__/check_method auto_${application} ${CHECK_READ_DATA} 2>> "$err_file" >> "$log_file" ; then
         errors+="\nRestic miserably failed to check backups for $application application."
     fi
 done

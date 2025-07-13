@@ -46,6 +46,18 @@ if ! grep -q "begin ${app}" /root/.ssh/config; then
     sed -e "/Host ${server}/,+6d" "/root/.ssh/config" -i || true
 fi
 
+# Retrieve repository
+repository=$(sudo yunohost app setting __APP__ repository)
+if [[ "$repository" = "" ]]; then
+    port=$(ynh_app_setting_get --key=port)
+    server=$(ynh_app_setting_get --key=server)
+    backup_path=$(ynh_app_setting_get --key=backup_path)
+    ssh_user=$(ynh_app_setting_get --key=ssh_user)
+    
+    ynh_app_setting_set --key=repository --value="sftp://$user@$server:$port/$backup_path/"
+fi
+
+
 #=================================================
 # INSTALL RESTIC
 #=================================================
