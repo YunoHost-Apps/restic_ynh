@@ -10,6 +10,13 @@ source /usr/share/yunohost/helpers
 # passwords aren't saved by default
 ynh_app_setting_set --key=passphrase --value="$passphrase"
 
+# these parameters are too technical to be requested from the user
+check_on_calendar="Sat *-*-8..31 3:15:00"
+ynh_app_setting_set --key=check_on_calendar --value="$check_on_calendar"
+
+check_read_data_on_calendar="Sat *-*-1..7 3:15:00"
+ynh_app_setting_set --key=check_read_data_on_calendar --value="$check_read_data_on_calendar"
+
 #=================================================
 # INSTALL RESTIC
 #=================================================
