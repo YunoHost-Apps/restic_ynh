@@ -12,6 +12,15 @@ RESTIC_COMMAND=__INSTALL_DIR__/restic
 LOGFILE=/var/log/__APP__/backup.log
 ERRFILE=/var/log/__APP__/backup-error.log
 
+load_env_file() {
+  local env_file="__INSTALL_DIR__/.env"
+  if [ -f "$env_file" ]; then
+    set -o allexport
+    source "$env_file"
+    set +o allexport
+  fi
+}
+
 do_need_mount() {
     work_dir="$1"
     name="$2"
@@ -20,6 +29,7 @@ do_need_mount() {
     description="$5"
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
+    load_env_file
 
     # Check if a repository is already initialized
     $RESTIC_COMMAND cat config > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2) || $RESTIC_COMMAND init > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
@@ -35,6 +45,7 @@ do_backup() {
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
     current_date=$(date +"%d_%m_%y_%H:%M")
+    load_env_file
     pushd $work_dir
     $RESTIC_COMMAND backup ./ > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
     backup_return_code="$?"

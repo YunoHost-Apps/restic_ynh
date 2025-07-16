@@ -86,6 +86,14 @@ set__conf() {
     fi
 }
 
+get__environment() {
+    return $(cat $install_dir/.env)
+}
+
+set__environment() {
+    echo $environment > $install_dir/.env
+}
+
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
