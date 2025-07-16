@@ -71,12 +71,12 @@ name="Restic settings"
 
         [section.environment]
         type = "text"
-        default = ""
+        bind = "__INSTALL_DIR__/.env"
         optional = true
         redact = true
         help.en = "Environment variables"
         help.fr = "Variables d'environnement"
-        ask.en = "Il you store your backups on S3 or any other environment requiring environment variables, enter them here (on per line)"
+        ask.en = "If you store your backups on S3 or any other environment requiring environment variables, enter them here (on per line)"
         ask.fr = "Si vous stockez vos sauvegardes sur un serveur S3 ou sur un autre système nécessitant des variables d'environnement, définissez-les ici (un par ligne)"
 
         [main.advanced.check_on_calendar]

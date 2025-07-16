@@ -115,6 +115,11 @@ done
 ynh_config_add --template="sudoer" --destination="/etc/sudoers.d/$app"
 chown root:root "/etc/sudoers.d/$app"
 
+$conf_file = "$install_dir/.env"
+if [ ! -f "$conf_file" ]; then
+    touch $conf_file
+fi
+
 ynh_config_add_logrotate
 
 #=================================================
