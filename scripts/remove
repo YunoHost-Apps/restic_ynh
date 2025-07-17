@@ -31,7 +31,9 @@ ynh_safe_rm "/etc/yunohost/hooks.d/backup_method/05-${app}_app"
 #=================================================
 ynh_script_progression "Removing ssh config"
 
-sed -e "/begin ${app}/,/end ${app}/{/.*/d}" /root/.ssh/config -i || true
+if [ -f "/root/.ssh/config" ]; then
+    sed -e "/begin ${app}/,/end ${app}/{/.*/d}" /root/.ssh/config -i || true
+fi
 
 #=================================================
 # END OF SCRIPT

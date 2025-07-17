@@ -41,9 +41,11 @@ fi
 # multi-instance cases break the remaining instances.
 # So we need to add the delimiters if they are missing
 # The config will be re-added afterwards
-if ! grep -q "begin ${app}" /root/.ssh/config; then
-    # did not find delimiters so removing old configuration
-    sed -e "/Host ${server}/,+6d" "/root/.ssh/config" -i || true
+if [ -f "/root/.ssh/config" ]; then
+    if ! grep -q "begin ${app}" /root/.ssh/config; then
+        # did not find delimiters so removing old configuration
+        sed -e "/Host ${server}/,+6d" "/root/.ssh/config" -i || true
+    fi
 fi
 
 # Retrieve repository
@@ -115,7 +117,7 @@ done
 ynh_config_add --template="sudoer" --destination="/etc/sudoers.d/$app"
 chown root:root "/etc/sudoers.d/$app"
 
-$conf_file = "$install_dir/.env"
+conf_file="$install_dir/.env"
 if [ ! -f "$conf_file" ]; then
     touch $conf_file
 fi
