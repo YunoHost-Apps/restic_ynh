@@ -69,7 +69,7 @@ name="Restic settings"
     name = "Advanced configuration"
     optional = true
 
-        [section.environment]
+        [main.advanced.environment]
         type = "text"
         bind = "__INSTALL_DIR__/.env"
         optional = true
