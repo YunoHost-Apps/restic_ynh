@@ -18,7 +18,7 @@ check_read_data_on_calendar="Sat *-*-1..7 3:15:00"
 ynh_app_setting_set --key=check_read_data_on_calendar --value="$check_read_data_on_calendar"
 
 ynh_app_setting_set --key=last_run --value="never"
-ynh_app_setting_set --key=state --value="todo"
+ynh_app_setting_set --key=state --value="the first backup will be launched soon"
 
 
 #=================================================

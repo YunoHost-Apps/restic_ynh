@@ -59,6 +59,15 @@ if [[ "$repository" = "" ]]; then
     ynh_app_setting_set --key=repository --value="sftp://$ssh_user@$server:$port/$backup_path/"
 fi
 
+state=$(ynh_app_setting_get --key=state)
+if [[ "$state" = "" ]]; then
+    ynh_app_setting_set --key=state --value="the first backup will be launched soon"
+fi
+
+last_run=$(ynh_app_setting_get --key=last_run)
+if [[ "$last_run" = "" ]]; then
+    ynh_app_setting_set --key=last_run --value="never"
+fi
 
 #=================================================
 # INSTALL RESTIC
