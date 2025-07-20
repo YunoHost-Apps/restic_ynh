@@ -54,7 +54,7 @@ ram.runtime = "50M"
 
     [install.data]
     ask.en = "Should Restic backup emails and user home directories?"
-    ask.fr = "Restic doit-il sauvegarder les mails et les répertoires (home) des utilisateurs ?"
+    ask.fr = "Restic doit-il sauvegarder les e-mails et les répertoires (home) des utilisateurs ?"
     type = "boolean"
     default = true
 

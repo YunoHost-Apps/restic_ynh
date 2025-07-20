@@ -22,7 +22,7 @@ done
 ynh_config_remove_logrotate
 
 # Remove sudoers
-rm "/etc/sudoers.d/$app"
+ynh_safe_rm "/etc/sudoers.d/$app"
 
 ynh_safe_rm "/etc/yunohost/hooks.d/backup_method/05-${app}_app"
 
