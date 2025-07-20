@@ -1,130 +1,140 @@
 #!/bin/bash
 
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Stopping $app's systemd service..." --weight=1
+ynh_script_progression "Stopping $app's systemd service..."
 
 if grep "${app}.timer" /etc/yunohost/services.yml > /dev/null ; then
     yunohost service remove $app.timer
-    ynh_systemd_action --service="$app" --action="stop"
-    ynh_systemd_action --service="$app.timer" --action="disable"
+    ynh_systemctl --action="stop"
+    ynh_systemctl --service="$app.timer" --action="disable"
 fi
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
+ynh_script_progression "Ensuring downward compatibility..."
 
 if [ -f "/usr/local/bin/backup-with-${app}" ]; then
-    ynh_delete_file_checksum --file="/usr/local/bin/backup-with-${app}"
-    ynh_secure_remove --file="/usr/local/bin/backup-with-${app}"
+    ynh_delete_file_checksum "/usr/local/bin/backup-with-${app}"
+    ynh_safe_rm "/usr/local/bin/backup-with-${app}"
 fi
 
 if [ -f "/usr/local/bin/$app" ]; then
-    ynh_secure_remove --file="/usr/local/bin/$app"
+    ynh_safe_rm "/usr/local/bin/$app"
 fi
 
 if [ -d "/opt/yunohost/$app" ]; then
     mv "/opt/yunohost/$app/"* "$install_dir"
-    ynh_delete_file_checksum --file="/opt/yunohost/$app/check-restic"
-    ynh_delete_file_checksum --file="/opt/yunohost/$app/check_method_restic"
-    ynh_delete_file_checksum --file="/opt/yunohost/$app/restic_check_log_restic"
-    ynh_delete_file_checksum --file="/opt/yunohost/$app/restic_log_restic"
-    ynh_secure_remove --file="/opt/yunohost/$app/"
+    ynh_delete_file_checksum "/opt/yunohost/$app/check-restic"
+    ynh_delete_file_checksum "/opt/yunohost/$app/check_method_restic"
+    ynh_delete_file_checksum "/opt/yunohost/$app/restic_check_log_restic"
+    ynh_delete_file_checksum "/opt/yunohost/$app/restic_log_restic"
+    ynh_safe_rm "/opt/yunohost/$app/"
 fi
 
 # old versions did not have delimiters in ~/.ssh/config making removal in
 # multi-instance cases break the remaining instances.
 # So we need to add the delimiters if they are missing
 # The config will be re-added afterwards
-if ! grep -q "begin ${app}" /root/.ssh/config; then
-    # did not find delimiters so removing old configuration
-    sed -e "/Host ${server}/,+6d" "/root/.ssh/config" -i || true
+if [ -f "/root/.ssh/config" ]; then
+    if ! grep -q "begin ${app}" /root/.ssh/config; then
+        # did not find delimiters so removing old configuration
+        sed -e "/Host ${server}/,+6d" "/root/.ssh/config" -i || true
+    fi
+fi
+
+# Retrieve repository
+repository=$(ynh_app_setting_get --key=repository)
+if [[ "$repository" = "" ]]; then
+    port=$(ynh_app_setting_get --key=port)
+    server=$(ynh_app_setting_get --key=server)
+    backup_path=$(ynh_app_setting_get --key=backup_path)
+    ssh_user=$(ynh_app_setting_get --key=ssh_user)
+    
+    ynh_app_setting_set --key=repository --value="sftp://$ssh_user@$server:$port/$backup_path/"
+fi
+
+state=$(ynh_app_setting_get --key=state)
+if [[ "$state" = "" ]]; then
+    ynh_app_setting_set --key=state --value="the first backup will be launched soon"
+fi
+
+last_run=$(ynh_app_setting_get --key=last_run)
+if [[ "$last_run" = "" ]]; then
+    ynh_app_setting_set --key=last_run --value="never"
 fi
 
 #=================================================
 # INSTALL RESTIC
 #=================================================
-ynh_script_progression --message="Installing Restic..." --weight=7
+ynh_script_progression "Installing Restic..."
 
 ynh_setup_source --source_id=main --dest_dir="$install_dir"
+bunzip2 -d -f /var/www/restic/restic.bz2
 chmod +x "$install_dir/restic"
 
 # This function will only create it if required
 _gen_and_save_public_key
 
-# Set ssh config if it is missing
-if ! grep -q "begin $app" "/root/.ssh/config"; then
-    _set_ssh_config
-fi
-
 #=================================================
 # SETUP THE BACKUP METHOD
 #=================================================
-ynh_script_progression --message="Setting up backup method..." --weight=1
+ynh_script_progression "Setting up backup method..."
 
 mkdir -p /etc/yunohost/hooks.d/backup
 mkdir -p /etc/yunohost/hooks.d/backup_method
 mkdir -p /usr/share/yunohost/backup_method
 
-## Backup method
-_ynh_add_config_j2 --template="backup_method.j2" --destination="/etc/yunohost/hooks.d/backup_method/05-${app}_app"
+# Backup method
+ynh_config_add --template="backup_method" --destination="/etc/yunohost/hooks.d/backup_method/05-${app}_app"
 chmod go=--- "/etc/yunohost/hooks.d/backup_method/05-${app}_app"
 
-_ynh_add_config_j2 --template="backup-with-restic.j2" --destination="$install_dir/backup-with-restic"
+ynh_config_add --template="backup-with-restic" --destination="$install_dir/backup-with-restic"
 chmod u+x "$install_dir/backup-with-restic"
 
 ## Check method
-_ynh_add_config_j2 --template="check_method.j2" --destination="$install_dir/check_method_restic"
+ynh_config_add --template="check_method" --destination="$install_dir/check_method"
+chmod u+x "$install_dir/check_method"
 
-_ynh_add_config_j2 --template="check-restic.j2" --destination="$install_dir/check-restic"
-chmod u+x "$install_dir/check-restic"
-
-## Backup log script
-_ynh_add_config_j2 --template="restic_log.j2" --destination="$install_dir/restic_log"
-chmod u+x "$install_dir/restic_log"
-
-# Check log script
-_ynh_add_config_j2 --template="restic_check_log.j2" --destination="$install_dir/restic_check_log"
-chmod u+x "$install_dir/restic_check_log"
+ynh_config_add --template="check-with-restic" --destination="$install_dir/check-with-restic"
+chmod u+x "$install_dir/check-with-restic"
 
 chown -R "$app:$app" "$install_dir"
 
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Adding system configurations related to $app..." --weight=1
+ynh_script_progression "Adding system configurations related to $app..."
 
 # Systemd services and timers
 for suffix in "${systemd_services_suffixes[@]}"; do
-    ynh_add_systemd_config --service="$app$suffix" --template="systemd$suffix.service"
-    _ynh_add_config_j2 --template="systemd$suffix.timer.j2" --destination="/etc/systemd/system/$app$suffix.timer"
-    ynh_systemd_action --service_name="${app}$suffix.service" --action="disable"
+    ynh_config_add_systemd --service="$app$suffix" --template="systemd$suffix.service"
+    ynh_config_add --template="systemd$suffix.timer" --destination="/etc/systemd/system/$app$suffix.timer"
+    ynh_systemctl --service="${app}$suffix.service" --action="disable"
     systemctl enable --quiet "${app}$suffix.timer"
-    ynh_systemd_action --service_name="${app}$suffix.timer" --action="start"
+    ynh_systemctl --service="${app}$suffix.timer" --action="start"
 
     yunohost service add "$app$suffix" --description="Restic backup program ($app$suffix)" \
         --test_status="systemctl show $app$suffix.service  -p ActiveState --value | grep -v failed"
 done
 
-ynh_add_config --template="sudoer" --destination="/etc/sudoers.d/$app"
+ynh_config_add --template="sudoer" --destination="/etc/sudoers.d/$app"
 chown root:root "/etc/sudoers.d/$app"
 
-ynh_use_logrotate --logfile="/var/log/restic_backup_${app}.log"
-ynh_use_logrotate --logfile="/var/log/restic_backup_${app}.err"
-ynh_use_logrotate --logfile="/var/log/restic_check_${app}.log"
-ynh_use_logrotate --logfile="/var/log/restic_check_${app}.err"
+conf_file="$install_dir/.env"
+if [ ! -f "$conf_file" ]; then
+    touch $conf_file
+fi
+
+ynh_config_add_logrotate
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed"
+ynh_script_progression "Upgrade of $app completed"

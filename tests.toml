@@ -4,19 +4,12 @@ test_format = 1.0
 
 [default]
 
-    args.server = "dst.domain.tld"
-    args.ssh_user = "sam"
+    args.repository = "/tmp/test-restic"
     args.passphrase = "APassphrase"
     args.conf = 1
-    args.port = 2222
-    args.backup_path = "src.domain.tld"
     args.data = 1
-    args.app = "all"
-    args.allow_extra_space_use = 1
+    args.apps = "all"
     args.on_calendar = "Daily"
-    args.check_on_calendar = "*-*-8,15,22 3:15"
-    args.check_read_data_on_calendar = "*-*-1 3:15"
-
 
     [default.test_upgrade_from.526944051f68f4149e415be4e862ce3c69d69f18]
     name = "0.12.0~ynh9"

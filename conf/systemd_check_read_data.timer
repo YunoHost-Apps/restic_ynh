@@ -1,0 +1,8 @@
+[Unit]
+Description=Complete check __APP__ backup regularly
+
+[Timer]
+OnCalendar=__CHECK_READ_DATA_ON_CALENDAR__
+
+[Install]
+WantedBy=timers.target

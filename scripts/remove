@@ -1,46 +1,42 @@
 #!/bin/bash
 
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
-
 
 #=================================================
 # REMOVE SYSTEM CONFIGURATIONS
 #=================================================
-ynh_script_progression --message="Removing system configurations related to $app..." --weight=1
+ynh_script_progression "Removing system configurations related to $app..."
 
 # Systemd services and timers
 for suffix in "${systemd_services_suffixes[@]}"; do
-    if ynh_exec_warn_less yunohost service status "$app_suffix" >/dev/null; then
+    if ynh_hide_warnings yunohost service status "$app_suffix" >/dev/null; then
         yunohost service remove "$app_suffix"
     fi
-    ynh_systemd_action --service_name="$app$suffix.timer" --action="stop"
-    ynh_systemd_action --service_name="$app$suffix.timer" --action="disable"
-    ynh_remove_systemd_config --service="$app$suffix"
-    ynh_secure_remove "/etc/systemd/system/$app$suffix.timer"
+    ynh_systemctl --service="$app$suffix.timer" --action="stop"
+    ynh_systemctl --service="$app$suffix.timer" --action="disable"
+    ynh_config_remove_systemd "$app$suffix"
+    ynh_safe_rm "/etc/systemd/system/$app$suffix.timer"
 done
 
-# Remove the app-specific logrotate config
-ynh_remove_logrotate
+ynh_config_remove_logrotate
 
 # Remove sudoers
-rm "/etc/sudoers.d/$app"
+ynh_safe_rm "/etc/sudoers.d/$app"
 
-ynh_secure_remove "/etc/yunohost/hooks.d/backup_method/05-${app}_app"
+ynh_safe_rm "/etc/yunohost/hooks.d/backup_method/05-${app}_app"
 
 #=================================================
 # REMOVE SSH CONFIG
 #=================================================
-ynh_script_progression --message="Removing ssh config"
+ynh_script_progression "Removing ssh config"
 
-sed -e "/begin ${app}/,/end ${app}/{/.*/d}" /root/.ssh/config -i || true
+if [ -f "/root/.ssh/config" ]; then
+    sed -e "/begin ${app}/,/end ${app}/{/.*/d}" /root/.ssh/config -i || true
+fi
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Removal of $app completed"
+ynh_script_progression "Removal of $app completed"

@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -12,80 +8,79 @@ source /usr/share/yunohost/helpers
 #=================================================
 
 # passwords aren't saved by default
-ynh_app_setting_set --app=$app --key=passphrase --value="$passphrase"
+ynh_app_setting_set --key=passphrase --value="$passphrase"
+
+# these parameters are too technical to be requested from the user
+check_on_calendar="Sat *-*-8..31 3:15:00"
+ynh_app_setting_set --key=check_on_calendar --value="$check_on_calendar"
+
+check_read_data_on_calendar="Sat *-*-1..7 3:15:00"
+ynh_app_setting_set --key=check_read_data_on_calendar --value="$check_read_data_on_calendar"
+
+ynh_app_setting_set --key=last_run --value="never"
+ynh_app_setting_set --key=state --value="the first backup will be launched soon"
+
 
 #=================================================
 # INSTALL RESTIC
 #=================================================
-ynh_script_progression --message="Installing Restic..." --weight=7
+ynh_script_progression "Installing Restic..."
 
 ynh_setup_source --source_id=main --dest_dir="$install_dir"
+bunzip2 -d -f "$install_dir/restic.bz2"
 chmod +x "$install_dir/restic"
 
 _gen_and_save_public_key
 
-_set_ssh_config
-
 #=================================================
 # SETUP THE BACKUP METHOD
 #=================================================
-ynh_script_progression --message="Setting up backup method..." --weight=1
+ynh_script_progression "Setting up backup method..."
 
 mkdir -p /etc/yunohost/hooks.d/backup
 mkdir -p /etc/yunohost/hooks.d/backup_method
 mkdir -p /usr/share/yunohost/backup_method
 
 ## Backup method
-_ynh_add_config_j2 --template="backup_method.j2" --destination="/etc/yunohost/hooks.d/backup_method/05-${app}_app"
+ynh_config_add --template="backup_method" --destination="/etc/yunohost/hooks.d/backup_method/05-${app}_app"
 chmod go=--- "/etc/yunohost/hooks.d/backup_method/05-${app}_app"
 
-_ynh_add_config_j2 --template="backup-with-restic.j2" --destination="$install_dir/backup-with-restic"
+ynh_config_add --template="backup-with-restic" --destination="$install_dir/backup-with-restic"
 chmod u+x "$install_dir/backup-with-restic"
 
 ## Check method
-_ynh_add_config_j2 --template="check_method.j2" --destination="$install_dir/check_method_restic"
+ynh_config_add --template="check_method" --destination="$install_dir/check_method"
+chmod u+x "$install_dir/check_method"
 
-_ynh_add_config_j2 --template="check-restic.j2" --destination="$install_dir/check-restic"
-chmod u+x "$install_dir/check-restic"
-
-## Backup log script
-_ynh_add_config_j2 --template="restic_log.j2" --destination="$install_dir/restic_log"
-chmod u+x "$install_dir/restic_log"
-
-# Check log script
-_ynh_add_config_j2 --template="restic_check_log.j2" --destination="$install_dir/restic_check_log"
-chmod u+x "$install_dir/restic_check_log"
-
-chown -R "$app:$app" "$install_dir"
+ynh_config_add --template="check-with-restic" --destination="$install_dir/check-with-restic"
+chmod u+x "$install_dir/check-with-restic"
 
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================
-ynh_script_progression --message="Adding system configurations related to $app..." --weight=1
+ynh_script_progression "Adding system configurations..."
 
 # Systemd services and timers
 for suffix in "${systemd_services_suffixes[@]}"; do
-    ynh_add_systemd_config --service="$app$suffix" --template="systemd$suffix.service"
-    _ynh_add_config_j2 --template="systemd$suffix.timer.j2" --destination="/etc/systemd/system/$app$suffix.timer"
-    ynh_systemd_action --service_name="${app}$suffix.service" --action="disable"
+    ynh_config_add_systemd --service="$app$suffix" --template="systemd$suffix.service"
+    ynh_config_add --template="systemd$suffix.timer" --destination="/etc/systemd/system/$app$suffix.timer"
+    systemctl disable --quiet $app$suffix.service
     systemctl enable --quiet "${app}$suffix.timer"
-    ynh_systemd_action --service_name="${app}$suffix.timer" --action="start"
+    ynh_systemctl --service="${app}$suffix.timer" --action="start"
 
     yunohost service add "$app$suffix" --description="Restic backup program ($app$suffix)" \
         --test_status="systemctl show $app$suffix.service  -p ActiveState --value | grep -v failed"
 done
 
-ynh_add_config --template="sudoer" --destination="/etc/sudoers.d/$app"
+ynh_config_add --template="sudoer" --destination="/etc/sudoers.d/$app"
 chown root:root "/etc/sudoers.d/$app"
 
-ynh_use_logrotate --logfile="/var/log/restic_backup_${app}.log"
-ynh_use_logrotate --logfile="/var/log/restic_backup_${app}.err"
-ynh_use_logrotate --logfile="/var/log/restic_check_${app}.log"
-ynh_use_logrotate --logfile="/var/log/restic_check_${app}.err"
+touch $install_dir/.env
 
+ynh_config_add_logrotate
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Installation of $app completed" --last
+ynh_script_progression "Installation of $app completed"
