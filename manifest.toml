@@ -4,12 +4,12 @@ packaging_format = 2
 
 id = "restic"
 name = "Restic"
-description.en = "Backup your server with Restic"
-description.fr = "Sauvegardez votre serveur avec Restic"
+description.en = "Regularly create encrypted backups sent to another server using Restic"
+description.fr = "Créez régulièrement des sauvegardes chiffrées envoyées sur un autre serveur avec Restic"
 
-version = "0.18.0~ynh1"
+version = "0.18.0~ynh2"
 
-maintainers = ["Lionel Coupouchetty-Ramouchetty"]
+maintainers = ["Gildas-GH"]
 
 [upstream]
 license = "BSD-2-Clause"
@@ -18,7 +18,8 @@ admindoc = "https://restic.readthedocs.io/en/latest/"
 code = "https://github.com/restic/restic"
 
 [integration]
-yunohost = ">= 11.2"
+yunohost = ">= 12.0.9"
+helpers_version = "2.1"
 architectures = "all"
 multi_instance = true
 
@@ -30,89 +31,47 @@ ram.build = "50M"
 ram.runtime = "50M"
 
 [install]
-    [install.server]
-    ask.en = "Indicate the server where you want put your backups"
-    ask.fr = "Indiquez le serveur où vous voulez faire vos sauvegardes"
-    help.en = "IP address or resolvable hostname of your destination server"
-    help.fr = "Adresse IP ou nom résolvable de votre serveur de destination"
+    [install.repository]
+    ask.en = "In which location do you want to backup your files?"
+    ask.fr = "Dans quel endroit souhaitez-vous sauvegarder vos fichiers ?"
+    help.fr = "Spécifiez un serveur SFTP (`sftp:user@host:port/srv/restic-repo`) ou tout autre format de `--repo` supporté par Restic (voir https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html, you'll need to add environment variables manually)"
+    help.en = "Specify a SFTP server (`sftp:user@host:port/srv/restic-repo`) or any other repository format supported by Restic (see https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html, vous devrez ajouter des variables d'environnement manuellement)"
     type = "string"
-    example = "example.com"
-
-    [install.port]
-    ask.en = "sftp port of your server"
-    ask.fr = "Le port sftp de votre serveur"
-    help.en = "Listening port of your SFTP or SSH server. The default value is 22"
-    help.fr = "Le port d'écoute de votre serveur SFTP ou SSH. La valeur par défaut est 22"
-    type = "string"
-    example = "22"
-    default = "22"
-
-    [install.backup_path]
-    ask.en = "The directory where you want your backup repositories to be created in"
-    ask.fr = "Le répertoire dans lequel les dépôts restic seront créés"
-    help.en = "A complete or relative path to an existing directory on the remote server writable by the remote backup user. Defaults to the login directory"
-    help.fr = "Un chemin complet ou relatif vers un répertoire existant sur le serveur distant et accessible en écriture au compte utilisé pour la sauvegarde. Répertoire d'accueil par défaut"
-    type = "string"
-    example = "./backups"
-    default = "."
-
-    [install.ssh_user]
-    ask.en = "Indicate the ssh user to use to connect on this server"
-    ask.fr = "Indiquez l'utilisateur ssh à utiliser pour se connecter au serveur"
-    type = "string"
-    example = "john"
+    example = "sftp:john@serverb.tld:22/backups"
 
     [install.passphrase]
-    ask.en = "Indicate a strong passphrase, that you will keep preciously if you want to be able to use your backups"
-    ask.fr = "Indiquez une phrase de passe forte que vous garderez précieusement si vous voulez être en mesure d'utiliser vos sauvegardes"
+    ask.en = "Provide a strong passphrase to encrypt your backups."
+    ask.fr = "Indiquez une phrase de passe forte pour chiffrer vos sauvegardes."
+    help.en = "Keep it safe! There will be **no way** to restore your backup if you lose it. Do not communicate it to the remote host server holder, or anyone else."
+    help.fr = "Gardez-la précieusement ! Il sera impossible de restaurer vos sauvegardes sans celle-ci. Ne donnez pas cette clé à la personne qui gère le serveur distant - où à n'importe qui d'ailleurs."
     type = "password"
 
     [install.conf]
-    ask.en = "Would you like to backup your YunoHost configuration?"
-    ask.fr = "Souhaitez-vous effectuer des sauvegardes des configurations du système YunoHost ?"
+    ask.en = "Should Restic backup your YunoHost configuration?"
+    ask.fr = "Restic doit-il sauvegarder la configuration système YunoHost ?"
     type = "boolean"
     default = true
 
     [install.data]
-    ask.en = "Would you like to backup mails and user home directory?"
-    ask.fr = "Souhaitez-vous effectuer des sauvegardes des mails et des répertoire des utilisateurs ?"
+    ask.en = "Should Restic backup emails and user home directories?"
+    ask.fr = "Restic doit-il sauvegarder les mails et les répertoires (home) des utilisateurs ?"
     type = "boolean"
     default = true
 
     [install.apps]
-    ask.en = "Which apps would you backup (list separated by comma or 'all')?"
-    ask.fr = "Souhaitez-vous effectuer des sauvegardes de vos applications ?"
+    ask.en = "Which apps should Restic backup ?"
+    ask.fr = "Quelles applications doivent être sauvegardées par Restic ?"
+    help.en = "App list separated by comma. You can write 'all' to select all apps, even those installed after this Restic app. You can also select all apps but some apps by writing 'exclude:' following by an app list separated by comma."
+    help.fr = "Liste d'applications séparées par des virgules. Vous pouvez écrire 'all' pour sélectionner toutes les apps, même celles installées après cette application Restic. Vous pouvez aussi sélectionner toutes les apps sauf certaines en écrivant 'exclude:' suivi d'une liste d'applications séparées par des virgules."
     type = "string"
     default = "all"
 
-    [install.allow_extra_space_use]
-    ask.en = "Allow backup method to temporarily use more space?"
-    ask.fr = "Permettre à la sauvegarde de consommer temporairement de l'espace supplémentaire ?"
-    help.en = "Some applications as Gitlab can't be backed up with the standard method and require extra space temporarily"
-    help.fr = "Certaines applications comme Gitlab ne peuvent être sauvegardées avec la méthode standard et nécessitent d'utiliser plus d'espace disque temporairement"
-    type = "boolean"
-    default = true
-
     [install.on_calendar]
-    ask.en = "Indicate the backup frequency (see systemd OnCalendar format)"
-    ask.fr = "Indiquez la fréquence de la sauvegarde (voir le format OnCalendar de systemd)"
+    ask.en = "When and at which frequency should the backups be performed?"
+    ask.fr = "Quand et à quelle fréquence les sauvegardes doivent-elles être effectuées ?"
     type = "string"
-    example = "Daily"
-    default = "*-*-* 0:15:00"
-
-    [install.check_on_calendar]
-    ask.en = "Indicate the backup check frequency (see systemd OnCalendar format)"
-    ask.fr = "Indiquez la fréquence de vérification de la sauvegarde (voir le format OnCalendar de systemd)"
-    type = "string"
-    example = "Tue *-*-* 00:15:00"
-    default = "Sat *-*-8..31 3:15:00"
-
-    [install.check_read_data_on_calendar]
-    ask.en = "Indicate the complete backup check frequency (see systemd OnCalendar format)"
-    ask.fr = "Indiquez la fréquence de vérification complète de la sauvegarde (voir le format OnCalendar de systemd)"
-    type = "string"
-    example = "Tue *-*-* 00:15:00"
-    default = "Sat *-*-1..7 3:15:00"
+    help = "For example: `Monthly`, `Weekly`, `Daily` (=every day at midnight), `Hourly`, `Sat *-*-1..7 18:00:00` (=the first saturday of every month at 18:00), `4:00` (=every day at 4 AM), `5,17:00` (=every day at 5 AM and 5 PM). See the [systemd OnCalendar format for full syntax doc](https://wiki.archlinux.org/index.php/Systemd/Timers#Realtime_timer)"
+    default = "Daily"
 
 [resources]
     [resources.sources.main]
@@ -126,7 +85,7 @@ ram.runtime = "50M"
     armhf.sha256 = "a202b58cb23c7b40e2562d9b0804492f77278bd0d0bf043f5e02951f89c83eb5"
 
     in_subdir = false
-    rename = "restic"
+    rename = "restic.bz2"
 
     [resources.system_user]
 

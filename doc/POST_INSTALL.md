@@ -1,9 +1,8 @@
-You should now allow the following public key on the target server `__SERVER__` :
+If you're using SFTP, you should now allow the following public key on the target server : 
 
-- User: `__SSH_USER__`
-- Public key: `__PUBLIC_KEY__`
+`__PUBLIC_KEY__`
 
-Do so by running those commands on `__SERVER__` with user `__SSH_USER__`  :
+Do so by running those commands on the target server :
 
 ```
 mkdir ~/.ssh -p
@@ -12,7 +11,7 @@ chmod u=rw,go= ~/.ssh/authorized_keys
 echo "__PUBLIC_KEY__" >> ~/.ssh/authorized_keys
 ```
 
-Also make sure `__BACKUP_PATH__` exists and is writable by `__SSH_USER__`
+Also make sure that path exists and is writable by your user.
 
 Optional: to improve security, make sure the user can only connect through SFTP and can only access its home directory on the target server.
 On Debian/Ubuntu, this is done using the following command snippet:

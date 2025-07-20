@@ -5,17 +5,21 @@ set -e
 ###
 # Fetch information from YNH settings
 ###
-RESTIC_SERVER=$(yunohost app setting {{ app }} server)
-RESTIC_SERVER_PORT=$(yunohost app setting {{ app }} port)
-RESTIC_SERVER_USER=$(yunohost app setting {{ app }} ssh_user)
-RESTIC_PATH=$(yunohost app setting {{ app }} backup_path)
+RESTIC_REPOSITORY_BASE=$(yunohost app setting __APP__ repository)
+RESTIC_PASSWORD="$(yunohost app setting __APP__ passphrase)"
 
-RESTIC_PASSWORD="$(yunohost app setting {{ app }} passphrase)"
-RESTIC_REPOSITORY_BASE=sftp://$RESTIC_SERVER_USER@$RESTIC_SERVER:$RESTIC_SERVER_PORT/$RESTIC_PATH/
+RESTIC_COMMAND=__INSTALL_DIR__/restic
+LOGFILE=/var/log/__APP__/backup.log
+ERRFILE=/var/log/__APP__/backup-error.log
 
-RESTIC_COMMAND={{ install_dir }}/{{ app }}
-LOGFILE=/var/log/restic_backup_{{ app }}.log
-ERRFILE=/var/log/restic_backup_{{ app }}.err
+load_env_file() {
+  local env_file="__INSTALL_DIR__/.env"
+  if [ -f "$env_file" ]; then
+    set -o allexport
+    source "$env_file"
+    set +o allexport
+  fi
+}
 
 do_need_mount() {
     work_dir="$1"
@@ -25,9 +29,10 @@ do_need_mount() {
     description="$5"
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
+    load_env_file
 
-    # On essaie de lister les snapshots, sinon on initialise le depot
-    $RESTIC_COMMAND list snapshots > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2) || $RESTIC_COMMAND init > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
+    # Check if a repository is already initialized
+    $RESTIC_COMMAND cat config > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2) || $RESTIC_COMMAND init > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
 }
 
 do_backup() {
@@ -40,6 +45,7 @@ do_backup() {
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
     current_date=$(date +"%d_%m_%y_%H:%M")
+    load_env_file
     pushd $work_dir
     $RESTIC_COMMAND backup ./ > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
     backup_return_code="$?"
