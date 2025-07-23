@@ -1,8 +1,8 @@
 ### Test
 
-You can manually trigger backups using: `systemctl start restic.service`
+You can manually trigger backups using: `systemctl start __APP__.service`
 
-And then make sure to verify the backup contents using: `restic -r sftp:DESTINATION_SERVER:ORIGIN_SERVER/auto_conf snapshots`
+And then make sure to verify the backup contents using: `restic -r __REPOSITORY__/auto_conf snapshots`
 
 (Replace `auto_conf` with `auto_<app>` if you did not choose to backup configuration but only applications)
 

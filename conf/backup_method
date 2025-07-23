@@ -21,60 +21,83 @@ load_env_file() {
   fi
 }
 
+load_ssh_agent() {
+  local ssh_key="/root/.ssh/id___APP___ed25519"
+
+  # Verify if ssh-agend is running, start it otherwise
+  if [ -z "$SSH_AGENT_PID" ] || ! ps -p "$SSH_AGENT_PID" > /dev/null 2>&1; then
+    eval "$(ssh-agent -s)"
+  fi
+
+  # Verify if SSH key is already added
+  if ! ssh-add -l | grep -q "$(basename "$ssh_key")"; then
+    if [ -f "$ssh_key" ]; then
+      ssh-add "$ssh_key"
+    fi
+  fi
+}
+
 do_need_mount() {
-    work_dir="$1"
-    name="$2"
-    repo="$3"
-    size="$4"
-    description="$5"
+    local work_dir="$1"
+    local name="$2"
+    local size="$3"
+    local description="$4"
+
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
-    load_env_file
 
-    # Check if a repository is already initialized
-    $RESTIC_COMMAND cat config > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2) || $RESTIC_COMMAND init > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
+    load_env_file
+    load_ssh_agent
+
+    # Check if a repository is already initialized, else init
+    if $RESTIC_COMMAND cat config >> "$LOGFILE" 2>> "$ERRFILE"; then
+      echo "Repository already initialized" >> "$LOGFILE"
+    else
+      echo "Repository not initialized, initializing now" >> "$LOGFILE"
+      $RESTIC_COMMAND init >> "$LOGFILE" 2>> "$ERRFILE"
+    fi
 }
 
 do_backup() {
+    local work_dir="$1"
+    local name="$2"
+    local size="$3"
+    local description="$4"
 
-    work_dir="$1"
-    name="$2"
-    repo="$3"
-    size="$4"
-    description="$5"
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
+    local current_date
     current_date=$(date +"%d_%m_%y_%H:%M")
     load_env_file
-    pushd $work_dir
-    $RESTIC_COMMAND backup ./ > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
-    backup_return_code="$?"
-    popd
-
-    # On ne nettoie que si la sauvegarde s'est bien passee
-    if [ "$backup_return_code" -eq "0" ];then
-        $RESTIC_COMMAND forget --keep-daily 7 --keep-weekly 8 --keep-monthly 12 > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
+    load_ssh_agent
+    pushd "$work_dir" > /dev/null
+    $RESTIC_COMMAND backup ./ >> "$LOGFILE" 2>> "$ERRFILE"
+    local backup_return_code=$?
+    popd > /dev/null
+    if [ "$backup_return_code" -eq 0 ]; then
+        echo "Backup successful, running forget policy" >> "$LOGFILE"
+        $RESTIC_COMMAND forget --keep-daily 7 --keep-weekly 8 --keep-monthly 12 >> "$LOGFILE" 2>> "$ERRFILE"
+        echo "Forget policy applied" >> "$LOGFILE"
     else
-        echo "Something went wrong during backup" > >(tee -a $ERRFILE >&2)
+        echo "Backup failed with exit code $backup_return_code" >> "$ERRFILE"
         exit 1
     fi
 }
 
 work_dir=$2
 name=$3
-
 size=$5
 description=$6
 
 case "$1" in
   need_mount)
-    do_need_mount $work_dir $name $repo $size $description
+    do_need_mount "$work_dir" "$name" "$size" "$description"
     ;;
   backup)
-    do_backup $work_dir $name $repo $size $description
+    do_backup "$work_dir" "$name" "$size" "$description"
     ;;
   mount)
-    do_need_mount $work_dir $name $repo $size $description
+    do_need_mount "$work_dir" "$name" "$size" "$description"
     ;;
   *)
     echo "hook called with unknown argument \`$1'" >&2
