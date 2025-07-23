@@ -15,26 +15,59 @@ load_env_file() {
   fi
 }
 
-do_check() {
+load_ssh_agent() {
+  local ssh_key="/root/.ssh/id___APP___ed25519"
 
+  if [ -z "$SSH_AGENT_PID" ] || ! ps -p "$SSH_AGENT_PID" > /dev/null 2>&1; then
+    eval "$(ssh-agent -s)"
+  fi
+
+  if ! ssh-add -l | grep -q "$(basename "$ssh_key")"; then
+    if [ -f "$ssh_key" ]; then
+      ssh-add "$ssh_key" > /dev/null 2>&1
+    fi
+  fi
+}
+
+do_check() {
     local name="$1"
     local check_read_data="$2"
+
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
+
     LOGFILE=/var/log/__APP__/check.log
     ERRFILE=/var/log/__APP__/check-error.log
+    local current_date
     current_date=$(date --iso-8601=seconds)
+
     load_env_file
-    echo -e "\n$current_date" | tee -a ${LOGFILE} | tee -a ${ERRFILE}
-    echo -e "BEGIN REPO CHECK: ${name}" | tee -a ${LOGFILE} | tee -a ${ERRFILE}
-    if [ "$check_read_data" -eq "1" ];then
-      $RESTIC_COMMAND check --read-data > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
+    load_ssh_agent
+
+    {
+      echo -e "\n$current_date"
+      echo -e "BEGIN REPO CHECK: ${name}"
+    } >> "$LOGFILE"
+    {
+      echo -e "\n$current_date"
+      echo -e "BEGIN REPO CHECK: ${name}"
+    } >> "$ERRFILE"
+
+    if [ "$check_read_data" -eq 1 ]; then
+      $RESTIC_COMMAND check --read-data >> "$LOGFILE" 2>> "$ERRFILE"
     else
-      $RESTIC_COMMAND check > >(tee -a $LOGFILE) 2> >(tee -a $ERRFILE >&2)
+      $RESTIC_COMMAND check >> "$LOGFILE" 2>> "$ERRFILE"
     fi
-    echo -e "END REPO CHECK: ${name}" | tee -a ${LOGFILE} | tee -a ${ERRFILE}
-    check_return_code="$?"
-    return "${check_return_code}"
+    local check_return_code=$?
+
+    {
+      echo -e "END REPO CHECK: ${name}"
+    } >> "$LOGFILE"
+    {
+      echo -e "END REPO CHECK: ${name}"
+    } >> "$ERRFILE"
+
+    return "$check_return_code"
 }
 
 name=$1
