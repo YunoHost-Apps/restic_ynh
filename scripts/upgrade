@@ -44,7 +44,7 @@ fi
 if [ -f "/root/.ssh/config" ]; then
     if ! grep -q "begin ${app}" /root/.ssh/config; then
         # did not find delimiters so removing old configuration
-        sed -e "/Host ${server}/,+6d" "/root/.ssh/config" -i || true
+        sed -i "/Host ${server}/,+6d" "/root/.ssh/config" -i || true
     fi
 fi
 
