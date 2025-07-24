@@ -27,6 +27,7 @@ load_ssh_agent() {
       ssh-add "$ssh_key" > /dev/null 2>&1
     fi
   fi
+  trap 'ssh-agent -k > /dev/null' EXIT
 }
 
 do_check() {

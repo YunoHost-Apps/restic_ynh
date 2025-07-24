@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 ###
 # Fetch information from YNH settings
@@ -32,9 +32,10 @@ load_ssh_agent() {
   # Verify if SSH key is already added
   if ! ssh-add -l | grep -q "$(basename "$ssh_key")"; then
     if [ -f "$ssh_key" ]; then
-      ssh-add "$ssh_key"
+      ssh-add "$ssh_key" > /dev/null 2>&1
     fi
   fi
+  trap 'ssh-agent -k > /dev/null' EXIT
 }
 
 do_need_mount() {
