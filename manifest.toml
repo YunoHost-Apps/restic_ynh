@@ -62,7 +62,8 @@ ram.runtime = "50M"
     ask.en = "Which apps should Restic backup ?"
     ask.fr = "Quelles applications doivent être sauvegardées par Restic ?"
     help.en = "App list separated by spaces. You can write 'all' to select all apps, including those installed after this Restic app. You can also select all apps except some by writing 'exclude:' followed by a space-separated list of apps."
-    help.fr = "Liste d'applications séparées par des espaces. Vous pouvez écrire 'all' pour sélectionner toutes les apps, y compris celles installées après cette application Restic. Vous pouvez aussi sélectionner toutes les apps sauf certaines en écrivant 'exclude:' suivi d'une liste d'applications séparées par des espaces."    type = "string"
+    help.fr = "Liste d'applications séparées par des espaces. Vous pouvez écrire 'all' pour sélectionner toutes les apps, y compris celles installées après cette application Restic. Vous pouvez aussi sélectionner toutes les apps sauf certaines en écrivant 'exclude:' suivi d'une liste d'applications séparées par des espaces."
+    type = "string"
     default = "all"
 
     [install.on_calendar]
