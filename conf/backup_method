@@ -25,7 +25,7 @@ load_ssh_agent() {
   local ssh_key="/root/.ssh/id___APP___ed25519"
 
   # Verify if ssh-agend is running, start it otherwise
-  if [ -z "$SSH_AGENT_PID" ] || ! ps -p "$SSH_AGENT_PID" > /dev/null 2>&1; then
+  if [ -z "${SSH_AGENT_PID:-}" ] || ! ps -p "$SSH_AGENT_PID" > /dev/null 2>&1; then
     eval "$(ssh-agent -s)"
   fi
 
