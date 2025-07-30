@@ -45,13 +45,13 @@ for suffix in "${systemd_services_suffixes[@]}"; do
         --test_status="systemctl show $app$suffix.service  -p ActiveState --value | grep -v failed"
 done
 
-# When running in CI
-if [ "${PACKAGE_CHECK_EXEC:-0}" -eq 1 ]; then
-    ynh_systemctl --service="$app" --action="start"
-fi
-
 #=================================================
 # END OF SCRIPT
 #=================================================
 
 ynh_script_progression "Restoration completed for $app"
+
+# When running in CI
+if [ "${PACKAGE_CHECK_EXEC:-0}" -eq 1 ]; then
+    ynh_systemctl --service="$app" --action="start"
+fi
