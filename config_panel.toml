@@ -27,8 +27,8 @@ name="Restic settings"
         type = "string"
         ask.en = "In which location do you want to backup your files?"
         ask.fr = "Dans quel endroit souhaitez-vous sauvegarder vos fichiers ?"
-        help.fr = "Spécifiez un serveur SFTP (`sftp:user@host:port/srv/restic-repo`) ou tout autre format de `--repo` [supporté par Restic](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html), you'll need to add environment variables manually"
-        help.en = "Specify a SFTP server (`sftp:user@host:port/srv/restic-repo`) or any other repository format [supported by Restic](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html), vous devrez ajouter des variables d'environnement manuellement"
+        help.fr = "Spécifiez un serveur SFTP (`sftp:user@host:port/srv/restic-repo`) ou tout autre format de `--repo` [supporté par Restic](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html), vous devrez ajouter des variables d'environnement manuellement"
+        help.en = "Specify a SFTP server (`sftp:user@host:port/srv/restic-repo`) or any other repository format [supported by Restic](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html), you'll need to add environment variables manually"
 
         [main.general.ssh_public_key]
         ask.en = "Public key: {ssh_public_key}"
