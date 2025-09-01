@@ -8,7 +8,7 @@ test_format = 1.0
     args.passphrase = "APassphrase"
     args.conf = 1
     args.data = 1
-    args.apps = "all"
+    args.apps = "restic"
     args.on_calendar = "Daily"
 
     [default.test_upgrade_from.526944051f68f4149e415be4e862ce3c69d69f18]
