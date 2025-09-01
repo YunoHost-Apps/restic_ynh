@@ -41,12 +41,13 @@ fi
 # multi-instance cases break the remaining instances.
 # So we need to add the delimiters if they are missing
 # The config will be re-added afterwards
-if [ -f "/root/.ssh/config" ]; then
-    if ! grep -q "begin ${app}" /root/.ssh/config; then
-        # did not find delimiters so removing old configuration
-        sed -e "/Host ${server}/,+6d" "/root/.ssh/config" -i || true
-    fi
-fi
+# .ssh/config isn't used anymore
+# if [ -f "/root/.ssh/config" ]; then
+#     if ! grep -q "begin ${app}" /root/.ssh/config; then
+#         # did not find delimiters so removing old configuration
+#         sed -i "/Host ${server}/,+6d" "/root/.ssh/config" -i || true
+#     fi
+# fi
 
 # Retrieve repository
 repository=$(ynh_app_setting_get --key=repository)
@@ -138,3 +139,8 @@ ynh_config_add_logrotate
 #=================================================
 
 ynh_script_progression "Upgrade of $app completed"
+
+# When running in CI
+# if [ "${PACKAGE_CHECK_EXEC:-0}" -eq 1 ]; then
+#     ynh_systemctl --service="$app" --action="start"
+# fi

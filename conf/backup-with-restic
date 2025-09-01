@@ -29,8 +29,12 @@ if [[ "$data" = "1" ]]; then
     fi
 fi
 
-# Backup all apps independently
-apps=$(sudo yunohost app setting __APP__ apps | tr -d ' ')
+# Read and sanitize the app list:
+# - Remove spaces after commas
+# - Replace commas with spaces
+apps=$(sudo yunohost app setting __APP__ apps | sed 's/,[[:space:]]*/,/g')
+apps="${apps//,/ }"
+
 for application in $(sudo ls /etc/yunohost/apps/); do
 
     if ( [[ "$apps" =~ ^exclude: ]] && grep -wq "$application" <<< "$apps" ) ||
