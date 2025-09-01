@@ -27,8 +27,8 @@ name="Restic settings"
         type = "string"
         ask.en = "In which location do you want to backup your files?"
         ask.fr = "Dans quel endroit souhaitez-vous sauvegarder vos fichiers ?"
-        help.fr = "Spécifiez un serveur SFTP (`sftp:user@host:port/srv/restic-repo`) ou tout autre format de `--repo` [supporté par Restic](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html), you'll need to add environment variables manually"
-        help.en = "Specify a SFTP server (`sftp:user@host:port/srv/restic-repo`) or any other repository format [supported by Restic](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html), vous devrez ajouter des variables d'environnement manuellement"
+        help.fr = "Spécifiez un serveur SFTP (`sftp://user@host:port//srv/restic-repo`) ou tout autre format de `--repo` [supporté par Restic](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html), vous devrez ajouter des variables d'environnement manuellement."
+        help.en = "Specify a SFTP server (`sftp://user@host:port//srv/restic-repo`) or any other repository format [supported by Restic](https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html), you'll need to add environment variables manually."
 
         [main.general.ssh_public_key]
         ask.en = "Public key: {ssh_public_key}"
@@ -62,8 +62,8 @@ name="Restic settings"
         [main.content.apps]
         ask.en = "Apps"
         type = "tags"
-        help = "App list separated by comma. You can write 'all' to select all apps, even those installed after this restic app. You can also select all apps but some apps by writing 'exclude:' following by an app list separated by comma."
-        
+        help.en = "App list separated by spaces. You can write 'all' to select all apps, including those installed after this Restic app. You can also select all apps except some by writing 'exclude:' followed by a space-separated list of apps."
+        help.fr = "Liste d'applications séparées par des espaces. Vous pouvez écrire 'all' pour sélectionner toutes les apps, y compris celles installées après cette application Restic. Vous pouvez aussi sélectionner toutes les apps sauf certaines en écrivant 'exclude:' suivi d'une liste d'applications séparées par des espaces."        
         
     [main.advanced]
     name = "Advanced configuration"
