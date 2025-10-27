@@ -88,7 +88,7 @@ ram.runtime = "50M"
     autoupdate.asset.amd64 = ".*linux_amd64.bz2"
     autoupdate.asset.i386 = ".*linux_386.bz2"
     autoupdate.asset.arm64 = ".*linux_arm64.bz2"
-    autoupdate.asset.armf = ".*linux_arm.bz2"
+    autoupdate.asset.armhf = ".*linux_arm.bz2"
 
     in_subdir = false
     rename = "restic.bz2"
