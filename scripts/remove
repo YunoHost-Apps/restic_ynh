@@ -10,9 +10,7 @@ ynh_script_progression "Removing system configurations related to $app..."
 
 # Systemd services and timers
 for suffix in "${systemd_services_suffixes[@]}"; do
-    if ynh_hide_warnings yunohost service status "$app_suffix" >/dev/null; then
-        yunohost service remove "$app_suffix"
-    fi
+    yunohost service remove "$app$suffix"
     ynh_systemctl --service="$app$suffix.timer" --action="stop"
     ynh_systemctl --service="$app$suffix.timer" --action="disable"
     ynh_config_remove_systemd "$app$suffix"
