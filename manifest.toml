@@ -7,7 +7,7 @@ name = "Restic"
 description.en = "Regularly create encrypted backups sent to another server using Restic"
 description.fr = "Créez régulièrement des sauvegardes chiffrées envoyées sur un autre serveur avec Restic"
 
-version = "0.18.0~ynh3"
+version = "0.18.1~ynh1"
 
 maintainers = ["Gildas-GH"]
 
@@ -75,14 +75,20 @@ ram.runtime = "50M"
 
 [resources]
     [resources.sources.main]
-    amd64.url = "https://github.com/restic/restic/releases/download/v0.18.0/restic_0.18.0_linux_amd64.bz2"
-    amd64.sha256 = "98f6dd8bf5b59058d04bfd8dab58e196cc2a680666ccee90275a3b722374438e"
-    i386.url = "https://github.com/restic/restic/releases/download/v0.18.0/restic_0.18.0_linux_386.bz2"
-    i386.sha256 = "c171b288885830863fa290a3bcdc4e50c0425758f3fff7ce7fef27741b0cf374"
-    arm64.url = "https://github.com/restic/restic/releases/download/v0.18.0/restic_0.18.0_linux_arm64.bz2"
-    arm64.sha256 = "ce18179c25dc5f2e33e3c233ba1e580f9de1a4566d2977e8d9600210363ec209"
-    armhf.url = "https://github.com/restic/restic/releases/download/v0.18.0/restic_0.18.0_linux_arm.bz2"
-    armhf.sha256 = "a202b58cb23c7b40e2562d9b0804492f77278bd0d0bf043f5e02951f89c83eb5"
+    amd64.url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_amd64.bz2"
+    amd64.sha256 = "680838f19d67151adba227e1570cdd8af12c19cf1735783ed1ba928bc41f363d"
+    i386.url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_386.bz2"
+    i386.sha256 = "b6c4b3dc507ac8df840b5611ada36134fa2208a2941be3376096137712659f81"
+    arm64.url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_arm64.bz2"
+    arm64.sha256 = "87f53fddde38764095e9c058a3b31834052c37e5826d2acf34e18923c006bd45"
+    armhf.url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_arm.bz2"
+    armhf.sha256 = "1ead22ca3b123f11cd1ce74ba4079c324aa616efb25227c715471420a1c2a364"
+
+    autoupdate.strategy = "latest_github_release"
+    autoupdate.asset.amd64 = ".*linux_amd64.bz2"
+    autoupdate.asset.i386 = ".*linux_386.bz2"
+    autoupdate.asset.arm64 = ".*linux_arm64.bz2"
+    autoupdate.asset.armhf = ".*linux_arm.bz2"
 
     in_subdir = false
     rename = "restic.bz2"
