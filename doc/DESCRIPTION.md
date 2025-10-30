@@ -1,9 +1,11 @@
 A [Restic](https://restic.net/) integration to backup your YunoHost server to an external location.
 
 ### Features
+- **Multiple storage backends**: Supports all Restic storage types (SFTP, S3, Backblaze B2, Azure, etc.). **SFTP is recommended** for simplicity.
+- **Deduplication and compression**: Saves space by removing duplicates and compressing data.
+- **Encryption**: Data is encrypted before being sent to the storage backend.
+- **Flexibility**: Install multiple instances to backup to different locations or set custom frequencies.
 
-- backup data to remote storages (support for different types of storage: currently SFTP, S3 is planned)
-- deduplication and compression of files, which makes it possible to keep many previous copies
-- data encryption, which allows to store data at a third party
-
-You can setup the Restic app several times on the same server so you can backup on several server or manage your frequency backup differently for specific part of your server.
+### Configuration
+- **SFTP**: Configure directly during installation.
+- **Other backends**: Set the required environment variables in the **App Panel** after installation.
