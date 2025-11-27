@@ -35,20 +35,51 @@ fi
 apps=$(sudo yunohost app setting __APP__ apps | sed 's/,[[:space:]]*/,/g')
 apps="${apps//,/ }"
 
-for application in $(sudo ls /etc/yunohost/apps/); do
+# Initialisation
+include_all=false
+exclude_list=()
+explicit_include_list=()
 
-    if ( [[ "$apps" =~ ^exclude: ]] && grep -wq "$application" <<< "$apps" ) ||
-       ( [[ "$apps" != "all" ]] && [[ ! "$apps" =~ ^exclude: ]]  && ! grep -wq "$application" <<< "$apps" );
-    then
-        continue
+# Parse app list
+for item in $apps; do
+    if [[ "$item" == "all" ]]; then
+        include_all=true
+    elif [[ "$item" =~ ^exclude: ]]; then
+        exclude_list+=("${item#exclude:}")
+    else
+        # If you are not in "all" mode, add to the explicit inclusion list
+        if ! $include_all; then
+            explicit_include_list+=("$item")
+        # If you are in "all" mode and the element is not prefixed with "exclude:", it is an implicit exclusion.
+        else
+            exclude_list+=("$item")
+        fi
+    fi
+done
+
+# Loop on applications
+for application in $(sudo ls /etc/yunohost/apps/); do
+    # Exclude/Include logic
+    if $include_all; then
+        # "All" mode: those in exclude_list are excluded.
+        if printf '%s\n' "${exclude_list[@]}" | grep -q "^${application}\$"; then
+            continue
+        fi
+    else
+        # Explicit inclusion mode: only those in explicit_include_list are included.
+        if ! printf '%s\n' "${explicit_include_list[@]}" | grep -q "^${application}\$"; then
+            continue
+        fi
     fi
 
-    if sudo test ! -f "/etc/yunohost/apps/$application/scripts/backup" ; then
+    # Verify backup script
+    if sudo test ! -f "/etc/yunohost/apps/$application/scripts/backup"; then
         errors+="\nWarning: The application $application has no backup script. This app won't be backed up."
         continue
     fi
 
-    if ! sudo yunohost backup create -n "auto_$application" --method __APP___app --apps $application 2>> "$err_file" >> "$log_file" ; then
+    # Execute backup
+    if ! sudo yunohost backup create -n "auto_$application" --method __APP___app --apps "$application" 2>> "$err_file" >> "$log_file"; then
         errors+="\nThe backup miserably failed to backup $application application."
     fi
 done
