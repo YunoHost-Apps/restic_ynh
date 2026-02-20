@@ -77,8 +77,9 @@ do_backup() {
     popd > /dev/null
     if [ "$backup_return_code" -eq 0 ]; then
         echo "Backup successful, running forget policy" >> "$LOGFILE"
-        $RESTIC_COMMAND forget --keep-daily 7 --keep-weekly 8 --keep-monthly 12 >> "$LOGFILE" 2>> "$ERRFILE"
-        echo "Forget policy applied" >> "$LOGFILE"
+        local forget_policy="$(yunohost app setting __APP__ forget_policy)"
+        $RESTIC_COMMAND forget $forget_policy >> "$LOGFILE" 2>> "$ERRFILE"
+        echo "Forget policy applied: $forget_policy" >> "$LOGFILE"
     else
         echo "Backup failed with exit code $backup_return_code" >> "$ERRFILE"
         exit 1

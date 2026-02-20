@@ -70,6 +70,11 @@ if [[ "$last_run" = "" ]]; then
     ynh_app_setting_set --key=last_run --value="never"
 fi
 
+forget_policy=$(ynh_app_setting_get --key=forget_policy)
+if [[ "$forget_policy" = "" ]]; then
+    ynh_app_setting_set --key=forget_policy --value="--keep-daily 7 --keep-weekly 8 --keep-monthly 12"
+fi
+
 #=================================================
 # INSTALL RESTIC
 #=================================================
@@ -106,6 +111,8 @@ ynh_config_add --template="check-with-restic" --destination="$install_dir/check-
 chmod u+x "$install_dir/check-with-restic"
 
 chown -R "$app:$app" "$install_dir"
+
+chmod 600 /root/.ssh/id_${app}_ed25519
 
 #=================================================
 # SYSTEM CONFIGURATION
