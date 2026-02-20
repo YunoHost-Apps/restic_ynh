@@ -11,15 +11,15 @@ ynh_abort_if_errors
 get__info() {
         cat << EOF
 ask:
-  en: "**Backup state**: ${old[state]}
+  en: "**Backup state**: ${state}
 
-    **Last run**: ${old[last_run]}"
+    **Last run**: ${last_run}"
 EOF
-    if [ "${old[state]}" == "failed" ]; then
+    if [ "${state}" == "failed" ]; then
         cat << EOF
 style: "danger"
 EOF
-    elif [ "${old[state]}" == "successful" ]; then
+    elif [ "${state}" == "successful" ]; then
         cat << EOF
 style: "success"
 EOF
@@ -78,7 +78,9 @@ set__data_multimedia() {
         mkdir -p /home/yunohost.multimedia/
         touch /home/yunohost.multimedia/.nobackup
     else
-        ynh_safe_rm /home/yunohost.multimedia/.nobackup
+        if [ -e /home/yunohost.multimedia/.nobackup ]; then
+            ynh_safe_rm /home/yunohost.multimedia/.nobackup
+        fi
     fi
 }
 
@@ -116,25 +118,25 @@ load_env_file() {
   local env_file="$app/.env"
   if [ -f "$env_file" ]; then
     set -o allexport
-    source "$env_file" || { echo "Erreur : Impossible de charger le fichier d'environnement $env_file" >&2; exit 1; }
+    source "$env_file" || { ynh_print_warn "Erreur : Impossible de charger le fichier d'environnement $env_file" >&2; exit 1; }
     set +o allexport
   fi
 }
 
 load_ssh_agent() {
-  local ssh_key="/root/.ssh/id${$app}ed25519"
+  local ssh_key="/root/.ssh/id_${app}_ed25519"
 
   # Verify if ssh-agent is running, start it otherwise
   if [ -z "${SSH_AGENT_PID:-}" ] || ! ps -p "$SSH_AGENT_PID" > /dev/null 2>&1; then
-    eval "$(ssh-agent -s)" || { echo "Erreur : Impossible de démarrer ssh-agent" >&2; exit 1; }
+    eval "$(ssh-agent -s)" || { ynh_print_warn "Erreur : Impossible de démarrer ssh-agent" >&2; exit 1; }
   fi
 
   # Verify if SSH key is already added
   if ! ssh-add -l | grep -q "$(basename "$ssh_key")"; then
     if [ -f "$ssh_key" ]; then
-      ssh-add "$ssh_key" > /dev/null 2>&1 || echo "Erreur : Impossible d'ajouter la clé SSH $ssh_key" >&2
+      ssh-add "$ssh_key" > /dev/null 2>&1 || ynh_print_warn "Erreur : Impossible d'ajouter la clé SSH $ssh_key" >&2
     else
-      echo "Erreur : Clé SSH $ssh_key introuvable" >&2
+      ynh_print_warn "Erreur : Clé SSH $ssh_key introuvable" >&2
     fi
   fi
   trap 'ssh-agent -k > /dev/null' EXIT
@@ -143,22 +145,24 @@ load_ssh_agent() {
 run__check_connection() {
     local output
     local exit_code
-    ynh_print_info "Checking connection..."
     pushd "/var/www/$app"
     load_env_file
     load_ssh_agent
+    export RESTIC_PASSWORD="$passphrase"
+    set +e
     output=$(./restic -r "$repository/auto_conf" cat config 2>&1)
     exit_code=$?
+    set -e
         case $exit_code in
         0)
-            ynh_print_info "Le dépôt est déjà initialisé."
+            ynh_print_info "Connexion réussie, le dépôt est déjà initialisé."
             ;;
         10)
-            ynh_print_info "Le dépôt n'existe pas (code $exit_code)."
+            ynh_print_info "Connexion réussie, le dépôt n'existe pas encore."
             ;;
         1)
             if [[ "$output" == *"repository does not exist"* ]]; then
-                ynh_print_info "Le dépôt n'existe pas mais la commande n'a pas échoué (ancienne version de Restic ?)."
+                ynh_print_info "Connexion réussie, le dépôt n'existe pas encore."
             else
                 ynh_print_warn "La commande a échoué avec le code $exit_code. Détails : $output"
             fi
@@ -169,7 +173,6 @@ run__check_connection() {
     esac
 
     popd
-    return $exit_code
 }
 
 #=================================================

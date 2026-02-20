@@ -8,17 +8,15 @@ set -euo pipefail
 # Fetch information from YNH settings
 ###
 RESTIC_REPOSITORY_BASE=$(yunohost app setting __APP__ repository)
-RESTIC_PASSWORD="$(yunohost app setting __APP__ passphrase)"
+RESTIC_PASSWORD=$(ynh_app_setting_get --app=__APP__ --key=passphrase)
 
 RESTIC_COMMAND=__INSTALL_DIR__/restic
-LOGFILE=/var/log/__APP__/backup.log
-ERRFILE=/var/log/__APP__/backup-error.log
 
 load_env_file() {
   local env_file="__INSTALL_DIR__/.env"
   if [ -f "$env_file" ]; then
     set -o allexport
-    source "$env_file" || { echo "Erreur : Impossible de charger le fichier d'environnement $env_file" >&2; exit 1; }
+    source "$env_file" || { ynh_print_warn "Erreur : Impossible de charger le fichier d'environnement $env_file" >&2; exit 1; }
     set +o allexport
   fi
 }
@@ -28,15 +26,15 @@ load_ssh_agent() {
 
   # Verify if ssh-agent is running, start it otherwise
   if [ -z "${SSH_AGENT_PID:-}" ] || ! ps -p "$SSH_AGENT_PID" > /dev/null 2>&1; then
-    eval "$(ssh-agent -s)" || { echo "Erreur : Impossible de démarrer ssh-agent" >&2; exit 1; }
+    eval "$(ssh-agent -s)" || { ynh_print_warn "Erreur : Impossible de démarrer ssh-agent" >&2; exit 1; }
   fi
 
   # Verify if SSH key is already added
   if ! ssh-add -l | grep -q "$(basename "$ssh_key")"; then
     if [ -f "$ssh_key" ]; then
-      ssh-add "$ssh_key" > /dev/null 2>&1 || echo "Erreur : Impossible d'ajouter la clé SSH $ssh_key" >&2
+      ssh-add "$ssh_key" > /dev/null 2>&1 || ynh_print_warn "Erreur : Impossible d'ajouter la clé SSH $ssh_key" >&2
     else
-      echo "Erreur : Clé SSH $ssh_key introuvable" >&2
+      ynh_print_warn "Erreur : Clé SSH $ssh_key introuvable" >&2
     fi
   fi
   trap 'ssh-agent -k > /dev/null' EXIT
@@ -54,19 +52,13 @@ do_need_mount() {
     load_env_file
     load_ssh_agent
 
-    # Check if a repository is already initialized, else init
-    echo "Vérification de l'initialisation du dépôt Restic..."
-    ynh_print_info "Vérification de l'initialisation du dépôt Restic..."
-
-    if $RESTIC_COMMAND cat config > /dev/null 2>&1; then
-      echo "Dépôt déjà initialisé" >&2
-    else
-      echo "Dépôt non initialisé, initialisation en cours..."
+    if ! $RESTIC_COMMAND cat config > /dev/null 2>&1; then
+      ynh_print_info "Dépôt non initialisé, initialisation en cours..."
       if ! $RESTIC_COMMAND init >&2; then
-        echo "Erreur : Échec de l'initialisation du dépôt Restic" >&2
+        ynh_print_warn "Erreur : Échec de l'initialisation du dépôt Restic" >&2
         exit 1
       fi
-      echo "Dépôt initialisé avec succès" >&2
+      ynh_print_info "Dépôt initialisé avec succès" >&2
     fi
 }
 
@@ -84,19 +76,16 @@ do_backup() {
     load_ssh_agent
     pushd "$work_dir" > /dev/null
 
-    echo "Lancement de la sauvegarde..."
     if ! $RESTIC_COMMAND backup ./ >&2; then
-      echo "Erreur : Échec de la sauvegarde Restic" >&2
+      ynh_print_warn "Erreur : Échec de la sauvegarde Restic" >&2
       exit 1
     fi
 
-    echo "Sauvegarde réussie, application de la politique de rétention..."
     local forget_policy="$(yunohost app setting __APP__ forget_policy)"
     if ! $RESTIC_COMMAND forget $forget_policy >&2; then
-      echo "Erreur : Échec de l'application de la politique de rétention" >&2
+      ynh_print_warn "Erreur : Échec de l'application de la politique de rétention" >&2
       exit 1
     fi
-    echo "Politique de rétention appliquée : $forget_policy" >&2
     popd > /dev/null
 }
 
@@ -116,7 +105,7 @@ case "$1" in
     do_need_mount "$work_dir" "$name" "$size" "$description"
     ;;
   *)
-    echo "Erreur : Argument inconnu \`$1'" >&2
+    ynh_print_warn "Erreur : Argument inconnu \`$1'" >&2
     exit 1
     ;;
 esac
