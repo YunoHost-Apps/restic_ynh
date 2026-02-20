@@ -112,6 +112,66 @@ set__forget_policy() {
     ynh_app_setting_set --key="forget_policy" --value="$forget_policy"
 }
 
+load_env_file() {
+  local env_file="$app/.env"
+  if [ -f "$env_file" ]; then
+    set -o allexport
+    source "$env_file" || { echo "Erreur : Impossible de charger le fichier d'environnement $env_file" >&2; exit 1; }
+    set +o allexport
+  fi
+}
+
+load_ssh_agent() {
+  local ssh_key="/root/.ssh/id${$app}ed25519"
+
+  # Verify if ssh-agent is running, start it otherwise
+  if [ -z "${SSH_AGENT_PID:-}" ] || ! ps -p "$SSH_AGENT_PID" > /dev/null 2>&1; then
+    eval "$(ssh-agent -s)" || { echo "Erreur : Impossible de démarrer ssh-agent" >&2; exit 1; }
+  fi
+
+  # Verify if SSH key is already added
+  if ! ssh-add -l | grep -q "$(basename "$ssh_key")"; then
+    if [ -f "$ssh_key" ]; then
+      ssh-add "$ssh_key" > /dev/null 2>&1 || echo "Erreur : Impossible d'ajouter la clé SSH $ssh_key" >&2
+    else
+      echo "Erreur : Clé SSH $ssh_key introuvable" >&2
+    fi
+  fi
+  trap 'ssh-agent -k > /dev/null' EXIT
+}
+
+run__check_connection() {
+    local output
+    local exit_code
+    ynh_print_info "Checking connection..."
+    pushd "/var/www/$app"
+    load_env_file
+    load_ssh_agent
+    output=$(./restic -r "$repository/auto_conf" cat config 2>&1)
+    exit_code=$?
+        case $exit_code in
+        0)
+            ynh_print_info "Le dépôt est déjà initialisé."
+            ;;
+        10)
+            ynh_print_info "Le dépôt n'existe pas (code $exit_code)."
+            ;;
+        1)
+            if [[ "$output" == *"repository does not exist"* ]]; then
+                ynh_print_info "Le dépôt n'existe pas mais la commande n'a pas échoué (ancienne version de Restic ?)."
+            else
+                ynh_print_warn "La commande a échoué avec le code $exit_code. Détails : $output"
+            fi
+            ;;
+        *)
+            ynh_print_warn "La commande a échoué avec le code $exit_code. Détails : $output"
+            ;;
+    esac
+
+    popd
+    return $exit_code
+}
+
 #=================================================
 # GENERIC FINALIZATION
 #=================================================

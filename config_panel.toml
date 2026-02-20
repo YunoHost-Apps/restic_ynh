@@ -42,6 +42,10 @@ name="Restic settings"
         help = "For example: `Monthly`, `Weekly`, `Daily` (=every day at midnight), `Hourly`, `Sat *-*-1..7 18:00:00` (=the first saturday of every month at 18:00), `4:00` (=every day at 4 AM), `5,17:00` (=every day at 5 AM and 5 PM). See the [systemd OnCalendar format for full syntax doc](https://wiki.archlinux.org/index.php/Systemd/Timers#Realtime_timer)"
         default = "Daily"
         
+        [main.general.check_connection]
+        type = "button"
+        ask.en = "Test connection"
+        ask.fr = "Tester la connexion"
         
     [main.content]
     name = "What should be backed up?"
