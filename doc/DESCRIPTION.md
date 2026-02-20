@@ -7,5 +7,5 @@ A [Restic](https://restic.net/) integration to backup your YunoHost server to an
 - **Flexibility**: Install multiple instances to backup to different locations or set custom frequencies.
 
 ### Configuration
-- **SFTP**: Configure directly during installation.
-- **Other backends**: Set the required environment variables in the **App Panel** after installation.
+- **SFTP**: A SSH key will be generated during installation, you'll have to allow it on your destination server.
+- **Other backends**: Set the required environment variables in the **Config Panel** after installation.

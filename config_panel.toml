@@ -2,7 +2,8 @@ version = "1.0"
 
 [main]
 services = []
-name="Restic settings"
+name.en = "Restic settings"
+name.fr = "Paramètres de Restic"
 
     [main.state]
     name = ""
@@ -16,9 +17,13 @@ name="Restic settings"
 
     [main.general]
         [main.general.info]
-        ask = """\
+        ask.en = """\
         Backup state : {{state}}
         Last run: {{last_run}}
+        """
+        ask.fr = """\
+        Statut de la sauvegarde : {{state}}
+        Dernière exécution : {{last_run}}
         """
         type = "alert"
         style = "info"
@@ -32,6 +37,7 @@ name="Restic settings"
 
         [main.general.ssh_public_key]
         ask.en = "Public key: {ssh_public_key}"
+        ask.fr = "Clé publique : {ssh_public_key}"
         type = "markdown"
         bind = "/root/.ssh/id___APP___ed25519.pub"
 
@@ -39,29 +45,30 @@ name="Restic settings"
         ask.en = "When and at which frequency should the backups be performed?"
         ask.fr = "Quand et à quelle fréquence les sauvegardes doivent-elles être effectuées ?"
         type = "string"
-        help = "For example: `Monthly`, `Weekly`, `Daily` (=every day at midnight), `Hourly`, `Sat *-*-1..7 18:00:00` (=the first saturday of every month at 18:00), `4:00` (=every day at 4 AM), `5,17:00` (=every day at 5 AM and 5 PM). See the [systemd OnCalendar format for full syntax doc](https://wiki.archlinux.org/index.php/Systemd/Timers#Realtime_timer)"
+        help.en = "For example: `Monthly`, `Weekly`, `Daily` (=every day at midnight), `Hourly`, `Sat *-*-1..7 18:00:00` (=the first saturday of every month at 18:00), `4:00` (=every day at 4 AM), `5,17:00` (=every day at 5 AM and 5 PM). See the [systemd OnCalendar format for full syntax doc](https://wiki.archlinux.org/index.php/Systemd/Timers#Realtime_timer)"
+        help.fr = "Par exemple : `Monthly`, `Weekly`, `Daily` (= tous les jours à minuit), `Hourly`, `Sat *-*-1..7 18:00:00` (= le premier samedi de chaque mois à 18h00), `4:00` (= tous les jours à 4h du matin), `5,17:00` (= tous les jours à 5h et 17h). Pour la syntaxe complète, consultez la [documentation du format OnCalendar de systemd](https://wiki.archlinux.org/index.php/Systemd/Timers#Realtime_timer)."
         default = "Daily"
         bind = "OnCalendar:/etc/systemd/system/__APP__.timer"
 
-        [main.general.check_connection]
-        type = "button"
-        ask.en = "Test connection"
-        ask.fr = "Tester la connexion"
-        
     [main.content]
-    name = "What should be backed up?"
+    name.en = "What should be backed up?"
+    name.fr = "Que faut-il sauvegarder ?"
     optional = false
 
         [main.content.conf]
-        ask.en = "Configuration"
+        ask.en = "Server configuration"
+        ask.fr = "Configuration du serveur"
         type = "boolean"
 
         [main.content.data]
-        ask.en = "Data"
+        ask.en = "Server and user data (home directory and emails)"
+        ask.fr = "Données du serveur et des utilisateurs (dossier home et e-mails)"
         type = "boolean"
+        enabled = "!backup_core_only"
 
         [main.content.data_multimedia]
         ask.en = "Multimedia"
+        ask.fr = "Multimédia"
         type = "boolean"
 
         [main.content.apps]
@@ -76,7 +83,8 @@ name="Restic settings"
         type = "boolean"
 
     [main.advanced]
-    name = "Advanced configuration"
+    name.en = "Advanced configuration"
+    name.fr = "Configuration avancée"
     optional = true
 
         [main.advanced.environment]
@@ -93,14 +101,16 @@ name="Restic settings"
         ask.en = "When and at which frequency should the backup checks be performed?"
         ask.fr = "Quand et à quelle fréquence les tests de sauvegarde doivent-ils être effectués ?"
         type = "string"
-        help = "For example: `Monthly`, `Weekly`, `Daily` (=every day at midnight), `Hourly`, `Sat *-*-1..7 18:00:00` (=the first saturday of every month at 18:00), `4:00` (=every day at 4 AM), `5,17:00` (=every day at 5 AM and 5 PM). See the [systemd OnCalendar format for full syntax doc](https://wiki.archlinux.org/index.php/Systemd/Timers#Realtime_timer)"
+        help.en = "For example: `Monthly`, `Weekly`, `Daily` (=every day at midnight), `Hourly`, `Sat *-*-1..7 18:00:00` (=the first saturday of every month at 18:00), `4:00` (=every day at 4 AM), `5,17:00` (=every day at 5 AM and 5 PM). See the [systemd OnCalendar format for full syntax doc](https://wiki.archlinux.org/index.php/Systemd/Timers#Realtime_timer)"
+        help.fr = "Par exemple : `Monthly`, `Weekly`, `Daily` (= tous les jours à minuit), `Hourly`, `Sat *-*-1..7 18:00:00` (= le premier samedi de chaque mois à 18h00), `4:00` (= tous les jours à 4h du matin), `5,17:00` (= tous les jours à 5h et 17h). Pour la syntaxe complète, consultez la [documentation du format OnCalendar de systemd](https://wiki.archlinux.org/index.php/Systemd/Timers#Realtime_timer)."
         bind = "OnCalendar:/etc/systemd/system/__APP___check.timer"
 
         [main.advanced.check_read_data_on_calendar]
         ask.en = "When and at which frequency should the full backup checks be performed?"
         ask.fr = "Quand et à quelle fréquence les tests complets de sauvegarde doivent-ils être effectués ?"
         type = "string"
-        help = "For example: `Monthly`, `Weekly`, `Daily` (=every day at midnight), `Hourly`, `Sat *-*-1..7 18:00:00` (=the first saturday of every month at 18:00), `4:00` (=every day at 4 AM), `5,17:00` (=every day at 5 AM and 5 PM). See the [systemd OnCalendar format for full syntax doc](https://wiki.archlinux.org/index.php/Systemd/Timers#Realtime_timer)"
+        help.en = "For example: `Monthly`, `Weekly`, `Daily` (=every day at midnight), `Hourly`, `Sat *-*-1..7 18:00:00` (=the first saturday of every month at 18:00), `4:00` (=every day at 4 AM), `5,17:00` (=every day at 5 AM and 5 PM). See the [systemd OnCalendar format for full syntax doc](https://wiki.archlinux.org/index.php/Systemd/Timers#Realtime_timer)"
+        help.fr = "Par exemple : `Monthly`, `Weekly`, `Daily` (= tous les jours à minuit), `Hourly`, `Sat *-*-1..7 18:00:00` (= le premier samedi de chaque mois à 18h00), `4:00` (= tous les jours à 4h du matin), `5,17:00` (= tous les jours à 5h et 17h). Pour la syntaxe complète, consultez la [documentation du format OnCalendar de systemd](https://wiki.archlinux.org/index.php/Systemd/Timers#Realtime_timer)."
         bind = "OnCalendar:/etc/systemd/system/__APP___check_read_data.timer"
 
         [main.advanced.forget_policy]
@@ -110,3 +120,18 @@ name="Restic settings"
         help.en = "Restic forget options to clean up old backups. For example: --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --keep-yearly 2"
         help.fr = "Options Restic forget pour nettoyer les anciennes sauvegardes. Par exemple : --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --keep-yearly 2"
         default = "--keep-daily 7 --keep-weekly 4 --keep-monthly 6 --keep-yearly 2"
+
+    [main.actions]
+    name = "Actions"
+    optional = true
+
+        [main.actions.check_connection]
+        type = "button"
+        ask.en = "Test connection"
+        ask.fr = "Tester la connexion"
+        
+        [main.actions.now]
+        type = "button"
+        ask.en = "Run backup now"
+        ask.fr = "Faire une sauvegarde immédiatement"
+        

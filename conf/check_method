@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /usr/share/yunohost/helpers
+
 set -e
 
 RESTIC_REPOSITORY_BASE=$(yunohost app setting __APP__ repository)

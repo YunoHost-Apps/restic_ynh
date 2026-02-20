@@ -45,14 +45,6 @@ get__data_multimedia() {
     fi
 }
 
-get__conf() {
-    ynh_app_setting_get --app=$app --key=conf
-}
-
-get__forget_policy() {
-    ynh_app_setting_get --app=$app --key=forget_policy
-}
-
 #=================================================
 # SPECIFIC VALIDATORS FOR TOML SHORT KEYS
 #=================================================
@@ -84,19 +76,11 @@ set__data_multimedia() {
     fi
 }
 
-set__conf() {
-    if [ -n "${conf}" ]
-    then
-        # Update the config of the app
-        ynh_app_setting_set --app=$app --key=conf --value=$conf
-    fi
-}
+#=================================================
+# SPECIFIC ACTIONS FOR TOML SHORT KEY
+#=================================================
 
-set__forget_policy() {
-    ynh_app_setting_set --key="forget_policy" --value="$forget_policy"
-}
-
-load_env_file() {
+__load_env_file() {
   local env_file="$app/.env"
   if [ -f "$env_file" ]; then
     set -o allexport
@@ -105,7 +89,7 @@ load_env_file() {
   fi
 }
 
-load_ssh_agent() {
+__load_ssh_agent() {
   local ssh_key="/root/.ssh/id_${app}_ed25519"
 
   # Verify if ssh-agent is running, start it otherwise
@@ -128,8 +112,8 @@ run__check_connection() {
     local output
     local exit_code
     pushd "/var/www/$app"
-    load_env_file
-    load_ssh_agent
+    __load_env_file
+    __load_ssh_agent
     export RESTIC_PASSWORD=$passphrase
     set +e
     output=$(./restic -r "$repository/auto_conf" cat config 2>&1)
@@ -155,6 +139,10 @@ run__check_connection() {
     esac
 
     popd
+}
+
+run__now() {
+    systemctl start --no-block $app
 }
 
 #=================================================
