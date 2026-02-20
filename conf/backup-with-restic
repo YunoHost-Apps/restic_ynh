@@ -13,6 +13,10 @@ filter_hooks() {
 sudo yunohost app setting __APP__ last_run -v "${current_date}"
 sudo yunohost app setting __APP__ state -v "ongoing"
 
+BACKUP_CORE_ONLY=$(sudo yunohost app setting __APP__ backup_core_only)
+
+export BACKUP_CORE_ONLY
+
 # Backup system part conf
 conf=$(sudo yunohost app setting __APP__ conf)
 if [[ "$conf" = "1" ]]; then

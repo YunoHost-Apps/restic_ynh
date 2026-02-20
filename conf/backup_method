@@ -9,6 +9,7 @@ set -euo pipefail
 ###
 RESTIC_REPOSITORY_BASE=$(yunohost app setting __APP__ repository)
 RESTIC_PASSWORD=$(ynh_app_setting_get --app=__APP__ --key=passphrase)
+HOME="/root"
 
 RESTIC_COMMAND=__INSTALL_DIR__/restic
 
@@ -48,6 +49,7 @@ do_need_mount() {
 
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
+    export HOME
 
     load_env_file
     load_ssh_agent
@@ -70,6 +72,8 @@ do_backup() {
 
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
+    export HOME
+    
     local current_date
     current_date=$(date +"%d_%m_%y_%H:%M")
     load_env_file

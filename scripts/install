@@ -23,6 +23,7 @@ ynh_app_setting_set --key=forget_policy --value="$forget_policy"
 
 ynh_app_setting_set --key=last_run --value="never"
 ynh_app_setting_set --key=state --value="the first backup will be launched soon"
+ynh_app_setting_set --key=backup_core_only --value=0
 
 
 #=================================================
