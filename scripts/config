@@ -148,7 +148,7 @@ run__check_connection() {
     pushd "/var/www/$app"
     load_env_file
     load_ssh_agent
-    export RESTIC_PASSWORD="$passphrase"
+    export RESTIC_PASSWORD=$passphrase
     set +e
     output=$(./restic -r "$repository/auto_conf" cat config 2>&1)
     exit_code=$?

@@ -8,7 +8,8 @@ set -euo pipefail
 # Fetch information from YNH settings
 ###
 RESTIC_REPOSITORY_BASE=$(yunohost app setting __APP__ repository)
-RESTIC_PASSWORD=$(ynh_app_setting_get --app=__APP__ --key=passphrase)
+password=$(ynh_app_setting_get --app=__APP__ --key=passphrase)
+RESTIC_PASSWORD=$password
 HOME="/root"
 
 RESTIC_COMMAND=__INSTALL_DIR__/restic
@@ -73,7 +74,7 @@ do_backup() {
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
     export HOME
-    
+
     local current_date
     current_date=$(date +"%d_%m_%y_%H:%M")
     load_env_file

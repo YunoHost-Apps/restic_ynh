@@ -3,7 +3,8 @@
 set -e
 
 RESTIC_REPOSITORY_BASE=$(yunohost app setting __APP__ repository)
-RESTIC_PASSWORD="$(yunohost app setting __APP__ passphrase)"
+password=$(ynh_app_setting_get --app=__APP__ --key=passphrase)
+RESTIC_PASSWORD=$password
 RESTIC_COMMAND=__INSTALL_DIR__/restic
 
 load_env_file() {
