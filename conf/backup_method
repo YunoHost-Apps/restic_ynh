@@ -36,6 +36,7 @@ load_ssh_agent() {
     if [ -f "$ssh_key" ]; then
       if ! ssh-add -q "$ssh_key" >&2; then
         ynh_print_warn "Failed to add SSH key to agent ($ssh_key)" >&2
+      fi
     else
       ynh_print_warn "Failed to find SSH key ($ssh_key)" >&2
     fi

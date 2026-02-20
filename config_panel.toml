@@ -17,13 +17,9 @@ name.fr = "Paramètres de Restic"
 
     [main.general]
         [main.general.info]
-        ask.en = """\
+        ask = """\
         Backup state : {{state}}
         Last run: {{last_run}}
-        """
-        ask.fr = """\
-        Statut de la sauvegarde : {{state}}
-        Dernière exécution : {{last_run}}
         """
         type = "alert"
         style = "info"
@@ -64,7 +60,6 @@ name.fr = "Paramètres de Restic"
         ask.en = "Server and user data (home directory and emails)"
         ask.fr = "Données du serveur et des utilisateurs (dossier home et e-mails)"
         type = "boolean"
-        enabled = "!backup_core_only"
 
         [main.content.data_multimedia]
         ask.en = "Multimedia"
