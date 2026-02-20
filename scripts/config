@@ -92,24 +92,6 @@ set__conf() {
     fi
 }
 
-set__on_calendar() {
-    ynh_app_setting_set --key="on_calendar" --value="$on_calendar"
-    ynh_config_add --template="systemd.timer" --destination="/etc/systemd/system/$app.timer"
-    systemctl daemon-reload
-}
-
-set__check_on_calendar() {
-    ynh_app_setting_set --key="check_on_calendar" --value="$check_on_calendar"
-    ynh_config_add --template="systemd_check.timer" --destination="/etc/systemd/system/${app}_check.timer"
-    systemctl daemon-reload
-}
-
-set__check_read_data_on_calendar() {
-    ynh_app_setting_set --key="check_read_data_on_calendar" --value="$check_read_data_on_calendar"
-    ynh_config_add --template="systemd_check_read_data.timer" --destination="/etc/systemd/system/${app}_check_read_data.timer"
-    systemctl daemon-reload
-}
-
 set__forget_policy() {
     ynh_app_setting_set --key="forget_policy" --value="$forget_policy"
 }
