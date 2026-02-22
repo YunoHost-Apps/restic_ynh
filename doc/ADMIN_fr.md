@@ -82,3 +82,20 @@ source /var/www/restic/.env
    ```
 
 5. **Restauration** : Une fois l'archive en place, YunoHost la reconnaîtra, et vous pourrez procéder à la restauration via l'interface d'administration ou les outils en ligne de commande de YunoHost.
+
+### Erreurs fréquentes
+
+- **Utilisation d’un serveur SFTP comme dépôt distant :**
+  Pour spécifier l’adresse d’un dépôt distant SFTP, utilisez ce format exact :
+  `sftp://utilisateur_backup@serveur_cible.tld:port_ssh//votre/dossier/`
+  *(Attention aux doubles barres obliques après le port.)*
+
+- **Échec de vérification de la clé hôte (SFTP) :**
+  Si l’erreur `subprocess ssh: Host key verification failed.` apparaît lors de la connexion à un dépôt SFTP, cela est souvent dû à des permissions incorrectes sur la clé SSH. Pour corriger le problème, exécutez :
+  `chmod 600 /root/.ssh/id___APP___ed25519`
+
+- **Environnement "chroot" (SFTP) :**
+  Si le système distant utilise un environnement "chroot" (par exemple, un autre serveur YunoHost avec la configuration SSH `ChrootDirectory %h`), le chemin du dossier racine n’est pas `/home/utilisateur`, mais simplement `/utilisateur`.
+
+- **Utilisation de Backblaze B2 comme dépôt distant :**
+  Avec Backblaze B2, si vous ne précisez pas de sous-dossier, ajoutez tout de même un `:` à la fin de l’adresse. Cela permet à Restic d’ajouter automatiquement le sous-dossier (par exemple, transformer `b2:xxxxxxxxxxx:` en `b2:xxxxxxxxxxx:/auto_<app>`). Cette étape évite l’erreur *"bucket name contains invalid characters"*.

@@ -74,3 +74,20 @@ mv roundcube_restore.tar /home/yunohost.backup/archives/
 ```
 
 Once the archive is in place, YunoHost will recognize it, and you can proceed with the restoration using the YunoHost admin interface or CLI tools.
+
+### Common Errors
+
+- **SFTP Server as Remote Repository:**
+  When specifying the address for an SFTP remote repository, ensure you use the correct format:
+  `sftp://backup_user@target_server.tld:ssh_port//your/folder/`
+  *(Note the double slash after the port number.)*
+
+- **Host Key Verification Failed (SFTP):**
+  If you encounter the error `subprocess ssh: Host key verification failed.` when connecting to a remote repository via SFTP, it is often due to incorrect permissions on the SSH key. To fix this, run:
+  `chmod 600 /root/.ssh/id___APP___ed25519`
+
+- **Chroot Environment (SFTP):**
+  If the remote system uses a "chroot" environment (e.g., another YunoHost server with the SSH configuration `ChrootDirectory %h`), the home directory path is not `/home/user` but rather `/user`.
+
+- **Backblaze B2 as Remote Repository:**
+  When using Backblaze B2, if you do not specify a subfolder, you must still append a `:` to the end of the address. This allows Restic to append the subfolder to the address (e.g., changing `b2:xxxxxxxxxxx:` to `b2:xxxxxxxxxxx:/auto_<app>`). This resolves the error "bucket name contains invalid characters."
