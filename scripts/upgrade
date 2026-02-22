@@ -116,6 +116,10 @@ chown -R "$app:$app" "$install_dir"
 
 chmod 600 /root/.ssh/id_${app}_ed25519
 
+## Helpers
+ynh_config_add --template="helpers" --destination="$install_dir/helpers"
+chmod u+x "$install_dir/helpers"
+
 #=================================================
 # SYSTEM CONFIGURATION
 #=================================================

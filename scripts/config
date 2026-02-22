@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source /usr/share/yunohost/helpers
+source /var/www/$app/helpers
 
 ynh_abort_if_errors
 
@@ -80,40 +81,12 @@ set__data_multimedia() {
 # SPECIFIC ACTIONS FOR TOML SHORT KEY
 #=================================================
 
-__load_env_file() {
-  local env_file="$app/.env"
-  if [ -f "$env_file" ]; then
-    set -o allexport
-    source "$env_file" || { ynh_print_warn "Erreur : Impossible de charger le fichier d'environnement $env_file" >&2; exit 1; }
-    set +o allexport
-  fi
-}
-
-__load_ssh_agent() {
-  local ssh_key="/root/.ssh/id_${app}_ed25519"
-
-  # Verify if ssh-agent is running, start it otherwise
-  if [ -z "${SSH_AGENT_PID:-}" ] || ! ps -p "$SSH_AGENT_PID" > /dev/null 2>&1; then
-    eval "$(ssh-agent -s)" || { ynh_print_warn "Erreur : Impossible de démarrer ssh-agent" >&2; exit 1; }
-  fi
-
-  # Verify if SSH key is already added
-  if ! ssh-add -l | grep -q "$(basename "$ssh_key")"; then
-    if [ -f "$ssh_key" ]; then
-      ssh-add "$ssh_key" > /dev/null 2>&1 || ynh_print_warn "Erreur : Impossible d'ajouter la clé SSH $ssh_key" >&2
-    else
-      ynh_print_warn "Erreur : Clé SSH $ssh_key introuvable" >&2
-    fi
-  fi
-  trap 'ssh-agent -k > /dev/null' EXIT
-}
-
 run__check_connection() {
     local output
     local exit_code
     pushd "/var/www/$app"
-    __load_env_file
-    __load_ssh_agent
+    load_env_file
+    load_ssh_agent
     export RESTIC_PASSWORD=$passphrase
     set +e
     output=$(./restic -r "$repository/auto_conf" cat config 2>&1)
