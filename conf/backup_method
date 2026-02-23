@@ -1,42 +1,19 @@
 #!/bin/bash
 
+source /usr/share/yunohost/helpers
+source /var/www/__APP__/helpers
+
 set -euo pipefail
 
 ###
 # Fetch information from YNH settings
 ###
 RESTIC_REPOSITORY_BASE=$(yunohost app setting __APP__ repository)
-RESTIC_PASSWORD="$(yunohost app setting __APP__ passphrase)"
+password=$(ynh_app_setting_get --app=__APP__ --key=passphrase)
+RESTIC_PASSWORD=$password
+HOME="/root"
 
 RESTIC_COMMAND=__INSTALL_DIR__/restic
-LOGFILE=/var/log/__APP__/backup.log
-ERRFILE=/var/log/__APP__/backup-error.log
-
-load_env_file() {
-  local env_file="__INSTALL_DIR__/.env"
-  if [ -f "$env_file" ]; then
-    set -o allexport
-    source "$env_file"
-    set +o allexport
-  fi
-}
-
-load_ssh_agent() {
-  local ssh_key="/root/.ssh/id___APP___ed25519"
-
-  # Verify if ssh-agend is running, start it otherwise
-  if [ -z "${SSH_AGENT_PID:-}" ] || ! ps -p "$SSH_AGENT_PID" > /dev/null 2>&1; then
-    eval "$(ssh-agent -s)"
-  fi
-
-  # Verify if SSH key is already added
-  if ! ssh-add -l | grep -q "$(basename "$ssh_key")"; then
-    if [ -f "$ssh_key" ]; then
-      ssh-add "$ssh_key" > /dev/null 2>&1
-    fi
-  fi
-  trap 'ssh-agent -k > /dev/null' EXIT
-}
 
 do_need_mount() {
     local work_dir="$1"
@@ -46,16 +23,18 @@ do_need_mount() {
 
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
+    export HOME
 
     load_env_file
     load_ssh_agent
 
-    # Check if a repository is already initialized, else init
-    if $RESTIC_COMMAND cat config >> "$LOGFILE" 2>> "$ERRFILE"; then
-      echo "Repository already initialized" >> "$LOGFILE"
-    else
-      echo "Repository not initialized, initializing now" >> "$LOGFILE"
-      $RESTIC_COMMAND init >> "$LOGFILE" 2>> "$ERRFILE"
+    if ! $RESTIC_COMMAND cat config > /dev/null 2>&1; then
+      ynh_print_info "The Restic repository isn't initialized yet"
+      if ! $RESTIC_COMMAND init -q >&2; then
+        ynh_print_warn "Failed to initialize the new Restic repository" >&2
+        exit 1
+      fi
+      ynh_print_info "The Restic repository was successfuly initialized" >&2
     fi
 }
 
@@ -67,22 +46,25 @@ do_backup() {
 
     export RESTIC_PASSWORD
     export RESTIC_REPOSITORY=${RESTIC_REPOSITORY_BASE}/$name
+    export HOME
+
     local current_date
     current_date=$(date +"%d_%m_%y_%H:%M")
     load_env_file
     load_ssh_agent
     pushd "$work_dir" > /dev/null
-    $RESTIC_COMMAND backup ./ >> "$LOGFILE" 2>> "$ERRFILE"
-    local backup_return_code=$?
-    popd > /dev/null
-    if [ "$backup_return_code" -eq 0 ]; then
-        echo "Backup successful, running forget policy" >> "$LOGFILE"
-        $RESTIC_COMMAND forget --keep-daily 7 --keep-weekly 8 --keep-monthly 12 >> "$LOGFILE" 2>> "$ERRFILE"
-        echo "Forget policy applied" >> "$LOGFILE"
-    else
-        echo "Backup failed with exit code $backup_return_code" >> "$ERRFILE"
-        exit 1
+
+    if ! $RESTIC_COMMAND backup -q ./ >&2; then
+      ynh_print_warn "Failed to upload backup with Restic"
+      exit 1
     fi
+
+    local forget_policy="$(yunohost app setting __APP__ forget_policy)"
+    if ! $RESTIC_COMMAND forget -q $forget_policy >&2; then
+      ynh_print_warn "Failed to apply backup retention policy"
+      exit 1
+    fi
+    popd > /dev/null
 }
 
 work_dir=$2
@@ -101,7 +83,7 @@ case "$1" in
     do_need_mount "$work_dir" "$name" "$size" "$description"
     ;;
   *)
-    echo "hook called with unknown argument \`$1'" >&2
+    ynh_print_warn "Unknown argument \`$1'" >&2
     exit 1
     ;;
 esac

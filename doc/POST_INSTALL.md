@@ -26,3 +26,11 @@ Match User __SSH_USER__
 EOF
 systemctl restart ssh
 ```
+
+-----
+
+If you're using another backup provider, add your environment variables on the App Config Panel.
+
+-----
+
+After allowing the SSH key or adding your environment variables, you can test that the connection is working with "Test connection" feature on the App Config Panel.

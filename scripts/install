@@ -17,8 +17,13 @@ ynh_app_setting_set --key=check_on_calendar --value="$check_on_calendar"
 check_read_data_on_calendar="Sat *-*-1..7 3:15:00"
 ynh_app_setting_set --key=check_read_data_on_calendar --value="$check_read_data_on_calendar"
 
+# Set default forget policy
+forget_policy="--keep-daily 7 --keep-weekly 4 --keep-monthly 6 --keep-yearly 2"
+ynh_app_setting_set --key=forget_policy --value="$forget_policy"
+
 ynh_app_setting_set --key=last_run --value="never"
 ynh_app_setting_set --key=state --value="the first backup will be launched soon"
+ynh_app_setting_set --key=backup_core_only --value=0
 
 
 #=================================================
@@ -54,6 +59,10 @@ chmod u+x "$install_dir/check_method"
 
 ynh_config_add --template="check-with-restic" --destination="$install_dir/check-with-restic"
 chmod u+x "$install_dir/check-with-restic"
+
+## Helpers
+ynh_config_add --template="helpers" --destination="$install_dir/helpers"
+chmod u+x "$install_dir/helpers"
 
 #=================================================
 # SYSTEM CONFIGURATION

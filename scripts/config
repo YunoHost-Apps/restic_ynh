@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source /usr/share/yunohost/helpers
+source /var/www/$app/helpers
 
 ynh_abort_if_errors
 
@@ -11,15 +12,15 @@ ynh_abort_if_errors
 get__info() {
         cat << EOF
 ask:
-  en: "**Backup state**: ${old[state]}
+  en: "**Backup state**: ${state}
 
-    **Last run**: ${old[last_run]}"
+    **Last run**: ${last_run}"
 EOF
-    if [ "${old[state]}" == "failed" ]; then
+    if [ "${state}" == "failed" ]; then
         cat << EOF
 style: "danger"
 EOF
-    elif [ "${old[state]}" == "successful" ]; then
+    elif [ "${state}" == "successful" ]; then
         cat << EOF
 style: "success"
 EOF
@@ -43,10 +44,6 @@ get__data_multimedia() {
     else
         echo true
     fi
-}
-
-get__conf() {
-    ynh_app_setting_get --app=$app --key=conf
 }
 
 #=================================================
@@ -74,16 +71,51 @@ set__data_multimedia() {
         mkdir -p /home/yunohost.multimedia/
         touch /home/yunohost.multimedia/.nobackup
     else
-        ynh_safe_rm /home/yunohost.multimedia/.nobackup
+        if [ -e /home/yunohost.multimedia/.nobackup ]; then
+            ynh_safe_rm /home/yunohost.multimedia/.nobackup
+        fi
     fi
 }
 
-set__conf() {
-    if [ -n "${conf}" ]
-    then
-        # Update the config of the app
-        ynh_app_setting_set --app=$app --key=conf --value=$conf
-    fi
+#=================================================
+# SPECIFIC ACTIONS FOR TOML SHORT KEY
+#=================================================
+
+run__check_connection() {
+    local output
+    local exit_code
+    pushd "/var/www/$app"
+    load_env_file
+    load_ssh_agent
+    export RESTIC_PASSWORD=$passphrase
+    set +e
+    output=$(./restic -r "$repository/auto_conf" cat config 2>&1)
+    exit_code=$?
+    set -e
+        case $exit_code in
+        0)
+            ynh_print_info "Connection successfull, repository is already initialized."
+            ;;
+        10)
+            ynh_print_info "Connection successfull, repository does not exists yet."
+            ;;
+        1)
+            if [[ "$output" == *"repository does not exist"* ]]; then
+                ynh_print_info "Connection successfull, repository does not exists yet."
+            else
+                ynh_print_warn "Action failed with code $exit_code. Details : $output"
+            fi
+            ;;
+        *)
+            ynh_print_warn "Action failed with code $exit_code. Details : $output"
+            ;;
+    esac
+
+    popd
+}
+
+run__now() {
+    systemctl start --no-block $app
 }
 
 #=================================================
