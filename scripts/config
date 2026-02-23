@@ -94,20 +94,20 @@ run__check_connection() {
     set -e
         case $exit_code in
         0)
-            ynh_print_info "Connexion réussie, le dépôt est déjà initialisé."
+            ynh_print_info "Connection successfull, repository is already initialized."
             ;;
         10)
-            ynh_print_info "Connexion réussie, le dépôt n'existe pas encore."
+            ynh_print_info "Connection successfull, repository does not exists yet."
             ;;
         1)
             if [[ "$output" == *"repository does not exist"* ]]; then
-                ynh_print_info "Connexion réussie, le dépôt n'existe pas encore."
+                ynh_print_info "Connection successfull, repository does not exists yet."
             else
-                ynh_print_warn "La commande a échoué avec le code $exit_code. Détails : $output"
+                ynh_print_warn "Action failed with code $exit_code. Details : $output"
             fi
             ;;
         *)
-            ynh_print_warn "La commande a échoué avec le code $exit_code. Détails : $output"
+            ynh_print_warn "Action failed with code $exit_code. Details : $output"
             ;;
     esac
 
