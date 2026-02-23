@@ -1,12 +1,10 @@
 #!/bin/bash
 
-source /usr/share/yunohost/helpers
-
 load_env_file() {
   local env_file="__INSTALL_DIR__/.env"
   if [ -f "$env_file" ]; then
     set -o allexport
-    source "$env_file" || { ynh_print_warn "Failed to load environment variables file ($env_file)" >&2; exit 1; }
+    source "$env_file" || { echo "Failed to load environment variables file ($env_file)" >&2; exit 1; }
     set +o allexport
   fi
 }
@@ -23,10 +21,10 @@ load_ssh_agent() {
   if ! ssh-add -l | grep -q "$(basename "$ssh_key")"; then
     if [ -f "$ssh_key" ]; then
       if ! ssh-add -q "$ssh_key" >&2; then
-        ynh_print_warn "Failed to add SSH key to agent ($ssh_key)" >&2
+        echo "Failed to add SSH key to agent ($ssh_key)" >&2
       fi
     else
-      ynh_print_warn "Failed to find SSH key ($ssh_key)" >&2
+      echo "Failed to find SSH key ($ssh_key)" >&2
     fi
   fi
   trap 'ssh-agent -k > /dev/null' EXIT
