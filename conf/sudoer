@@ -1,1 +1,2 @@
 __APP__ ALL=(root) NOPASSWD: /usr/bin/yunohost app setting *, /usr/bin/yunohost backup create *, /bin/journalctl*, __INSTALL_DIR__/*, /bin/ls, /usr/bin/test
+Defaults:__APP__ env_keep += "BACKUP_CORE_ONLY"
