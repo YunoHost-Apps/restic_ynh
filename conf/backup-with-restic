@@ -91,7 +91,7 @@ done
 # SEND MAIL TO NOTIFY ABOUT FAILED OPERATIONS
 #=============================================
 
-partial_errors="$(grep -iE "Error|Skipped|Warning|Fatal|Fail" "$log_file")"
+partial_errors="$(grep -iE "Error|Skipped|Warning|Fatal|Fail" "$log_file" | grep -v "backup 'systemctl stop")"
 if [ -n "$partial_errors" ]; then
     errors+="\nSome backup partially failed:\n$partial_errors"
 fi
