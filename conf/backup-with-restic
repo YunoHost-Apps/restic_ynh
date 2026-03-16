@@ -91,17 +91,27 @@ done
 # SEND MAIL TO NOTIFY ABOUT FAILED OPERATIONS
 #=============================================
 
-partial_errors="$(grep -iE "Error|Skipped|Warning|Fatal|Fail" "$log_file" | grep -v "backup 'systemctl stop")"
-if [ -n "$partial_errors" ]; then
-    errors+="\nSome backup partially failed:\n$partial_errors"
-fi
+# Détection des erreurs critiques
+critical_errors="$(grep -iE "Error|Skipped|Fatal|Fail" "$log_file")"
+
+# Détection des warnings
+warnings="$(grep -iE "Warning" "$log_file" | grep -v "backup 'systemctl stop")"
 
 # Send mail on backup (partially) failed
 domain=$(hostname)
 repository="$(sudo yunohost app setting __APP__ repository)"
-if [[ -n "$errors" ]]; then
+
+# Si des erreurs critiques sont présentes
+if [ -n "$critical_errors" ]; then
+    errors+="\nSome backup partially failed:\n$critical_errors"
     sudo yunohost app setting __APP__ state -v "failed"
     echo -e "$errors\n\n\n$(cat "$log_file")" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "[__APP__] Backup failed from $domain onto $repository" root
+# Si uniquement des warnings sont présents
+elif [ -n "$warnings" ]; then
+    errors+="\nBackup completed with warnings:\n$warnings"
+    sudo yunohost app setting __APP__ state -v "successful_with_warnings"
+    echo -e "$errors\n\n\n$(cat "$log_file")" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "[__APP__] Backup completed with warnings from $domain onto $repository" root
+# Si tout s'est bien passé
 else
     sudo yunohost app setting __APP__ state -v "successful"
 fi
