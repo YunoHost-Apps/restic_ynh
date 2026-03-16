@@ -1,10 +1,10 @@
 ### Command-line usage
 
-- Display the apps list to backup: `yunohost app setting restic apps`
-- Edit the apps list to backup: `yunohost app setting restic apps -v "nextcloud,wordpress"`
-- Trigger a backup manually: `systemctl start restic`
-- Trigger a backup consistency check: `systemctl start restic_check`
-- Trigger a complete check of the backups (this reads all the backed up data, it can take some time): `systemctl start restic_check_read_data`
+- Display the apps list to backup: `yunohost app setting __APP__ apps`
+- Edit the apps list to backup: `yunohost app setting __APP__ apps -v "nextcloud,wordpress"`
+- Trigger a backup manually: `systemctl start __APP__`
+- Trigger a backup consistency check: `systemctl start __APP___check`
+- Trigger a complete check of the backups (this reads all the backed up data, it can take some time): `systemctl start __APP___check_read_data`
 
 ### How to verify if backups succeeded
 
@@ -12,12 +12,12 @@ To verify if your automatic Restic backups succeeded, follow these steps:
 
 First, you need root access to the server. If your repository is not using SFTP, load the Restic environment variables by running:
 ```bash
-source /var/www/restic/.env
+source /var/www/__APP__/.env
 ```
 
 To get the target repository URL used by Restic, run:
 ```bash
-yunohost app setting restic repository
+yunohost app setting __APP__ repository
 ```
 This will return something like:
 ```
@@ -28,7 +28,7 @@ For each YunoHost application, Restic stores backups in a subdirectory of the re
 
 If you're using SFTP, the SSH key is tied to the root user, so you must be logged in as root. For all other repository types (S3, B2, etc.), navigate to the Restic directory:
 ```bash
-cd /var/www/restic/
+cd /var/www/__APP__/
 ```
 Then load the environment variables:
 ```bash
@@ -36,7 +36,7 @@ source .env
 ```
 Set the `RESTIC_REPOSITORY` variable to include the subdirectory for the app you want to check. For example, for Roundcube:
 ```bash
-RESTIC_REPOSITORY=$(yunohost app setting restic repository)/auto_roundcube
+RESTIC_REPOSITORY=$(yunohost app setting __APP__ repository)/auto_roundcube
 ```
 
 To verify the latest backup, list its contents with:
@@ -49,17 +49,17 @@ If the backup succeeded, you'll see a list of files and directories.
 
 To restore a backup using Restic, start by accessing the repository as described in the previous guide. Ensure you're logged in as **root** and, if not using SFTP, load the environment variables:
 ```bash
-source /var/www/restic/.env
+source /var/www/__APP__/.env
 ```
 
 Navigate to the Restic directory:
 ```bash
-cd /var/www/restic/
+cd /var/www/__APP__/
 ```
 
 Set the `RESTIC_REPOSITORY` variable to point to the subdirectory of the app you want to restore. For example, for Roundcube:
 ```bash
-RESTIC_REPOSITORY=$(yunohost app setting restic repository)/auto_roundcube
+RESTIC_REPOSITORY=$(yunohost app setting __APP__ repository)/auto_roundcube
 ```
 
 Next, create a `.tar` archive of the files you want to restore. For example, to restore the latest snapshot:
@@ -91,3 +91,9 @@ Once the archive is in place, YunoHost will recognize it, and you can proceed wi
 
 - **Backblaze B2 as Remote Repository:**
   When using Backblaze B2, if you do not specify a subfolder, you must still append a `:` to the end of the address. This allows Restic to append the subfolder to the address (e.g., changing `b2:xxxxxxxxxxx:` to `b2:xxxxxxxxxxx:/auto_<app>`). This resolves the error "bucket name contains invalid characters."
+
+- **Make your backup when the service is stopped:**
+  Some YunoHost apps (like Synapse, Gitea, Seafile, Sogo, Monitorix and Xwiki) recommand to make your backup when the service is stopped. You can enable an option in Restic Config Panel to stop them automatically during the backup. If enabled, these apps won't be available for users during each backup.
+
+- **YunoHost Backup Method:**
+  Restic for YunoHost adds a [custom backup method](https://doc.yunohost.org/en/admin/backups/custom_backup_methods/) named `__APP___app`, which replaces the default "local" backup step with sending the backup to a remote server. This method is called for each saved content (configuration, data, media, and each application) as follows: `sudo yunohost backup create -n "auto_$application" --method __APP___app --apps "$application"`. To manually trigger a backup with Restic, we recommend using `systemctl start __APP__`. This command will automatically use the custom method, applying the configuration you set during installation or in the **Config Panel**. If you use the custom backup method directly, you must specify what you want to back up. The `-n` flag is undocumented but required to determine where your backup will be stored on the remote server.

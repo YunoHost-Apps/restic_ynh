@@ -112,9 +112,16 @@ name.fr = "Paramètres de Restic"
         ask.en = "Forget policy for old backups"
         ask.fr = "Politique d'oubli pour les anciennes sauvegardes"
         type = "string"
-        help.en = "Restic forget options to clean up old backups. For example: --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --keep-yearly 2"
-        help.fr = "Options Restic forget pour nettoyer les anciennes sauvegardes. Par exemple : --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --keep-yearly 2"
+        help.en = "Restic forget options to clean up old backups. For example: `--keep-daily 7 --keep-weekly 4 --keep-monthly 6 --keep-yearly 2`"
+        help.fr = "Options Restic forget pour nettoyer les anciennes sauvegardes. Par exemple : `--keep-daily 7 --keep-weekly 4 --keep-monthly 6 --keep-yearly 2`"
         default = "--keep-daily 7 --keep-weekly 4 --keep-monthly 6 --keep-yearly 2"
+
+        [main.advanced.stop_apps]
+        ask.en = "Stop apps during backup"
+        ask.fr = "Eteindre les applications pendant la sauvegarde"
+        help.en = "Some applications recommand to be stopped to be backed up (Synapse, Gitea, Seafile, Sogo, Monitorix, Xwiki)"
+        help.fr = "Il est recommandé d'éteindre certaines applications pendant la sauvegarde (Synapse, Gitea, Seafile, Sogo, Monitorix, Xwiki)"
+        type = "boolean"
 
     [main.actions]
     name = "Actions"
