@@ -9,6 +9,11 @@ filter_hooks() {
     ls /usr/share/yunohost/hooks/backup/ | grep "\-$1_" | cut -d"-" -f2 | uniq 2>&1
 }
 
+# Some apps need to be stopped to be backed up
+# https://github.com/search?q=org%3AYunoHost-Apps%20recommended%20to%20make%20your%20backup%20when%20the%20service%20is%20stopped&type=code
+apps_to_stop=("synapse" "gitea" "seafile" "sogo" "monitorix" "xwiki")
+stop_apps=$(sudo yunohost app setting __APP__ stop_apps)
+
 sudo yunohost app setting __APP__ last_run -v "${current_date}"
 sudo yunohost app setting __APP__ state -v "ongoing"
 
@@ -62,6 +67,8 @@ done
 
 # Loop on applications
 for application in $(sudo ls /etc/yunohost/apps/); do
+    stopped="0"
+
     # Exclude/Include logic
     if $include_all; then
         # "All" mode: those in exclude_list are excluded.
@@ -81,9 +88,20 @@ for application in $(sudo ls /etc/yunohost/apps/); do
         continue
     fi
 
+    if [[ " ${apps_to_stop[@]} " =~ " ${application} " ]] && [ "$stop_apps" = "1" ]; then
+        systemctl stop "$application"
+        stopped="1"
+    fi
+
     # Execute backup
     if ! sudo yunohost backup create -n "auto_$application" --method __APP___app --apps "$application" >> "$log_file" 2>&1; then
         errors+="\nThe backup miserably failed to backup $application application."
+    fi
+
+    # Start app if stopped
+    if [[ "$application" == "1" ]]; then
+        systemctl start "$application"
+        stopped="0"
     fi
 done
 

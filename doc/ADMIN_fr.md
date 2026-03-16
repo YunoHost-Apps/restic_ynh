@@ -99,3 +99,9 @@ source /var/www/restic/.env
 
 - **Utilisation de Backblaze B2 comme dépôt distant :**
   Avec Backblaze B2, si vous ne précisez pas de sous-dossier, ajoutez tout de même un `:` à la fin de l’adresse. Cela permet à Restic d’ajouter automatiquement le sous-dossier (par exemple, transformer `b2:xxxxxxxxxxx:` en `b2:xxxxxxxxxxx:/auto_<app>`). Cette étape évite l’erreur *"bucket name contains invalid characters"*.
+
+- **Make your backup when the service is stopped:**
+  Plusieurs applications YunoHost (comme Synapse, Gitea, Seafile, Sogo, Monitorix et Xwiki) recommandent d'effectuer les sauvegardes lorsque le service est à l'arrêt. Vous pouvez activer une option dans le Config Panel de Restic pour les arrêter automatiquement pendant la sauvegarde. Si ce paramètre est activé, ces applications seront indisponibles aux utilisateurs pendant chaque sauvegarde.
+
+- **YunoHost Backup Method:**
+  L'application YunoHost Restic ajoute une [méthode de sauvegarde personnalisée](https://doc.yunohost.org/fr/admin/backups/custom_backup_methods/) nommée `__APP___app` qui permet d'ajouter l'étape d'envoi de la sauvegarde sur un serveur distant à la place de la sauvegarde en "local". Cette méthode est appelée pour chaque contenu sauvegardé (configuration, données, multimédia et chaque application) de la manière suivante : `sudo yunohost backup create -n "auto_$application" --method __APP___app --apps "$application"`. Pour lancer une sauvegarde manuellement avec Restic nous vous recommandons d'utiliser `systemctl start restic` qui utilisera cette méthode par elle-même en appliquant la configuration que vous avez demandée lors de l'installation ou dans le Config Panel. Si vous utilisez la méthode de sauvegarde personnalisée vous-même, vous devez préciser ce que vous souhaitez sauvegarder. L'attribut `-n` n'est pas documenté mais est bien nécessaire pour déterminer ou sera stockée votre sauvegarde sur le serveur distant.

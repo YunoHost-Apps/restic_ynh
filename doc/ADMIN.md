@@ -91,3 +91,9 @@ Once the archive is in place, YunoHost will recognize it, and you can proceed wi
 
 - **Backblaze B2 as Remote Repository:**
   When using Backblaze B2, if you do not specify a subfolder, you must still append a `:` to the end of the address. This allows Restic to append the subfolder to the address (e.g., changing `b2:xxxxxxxxxxx:` to `b2:xxxxxxxxxxx:/auto_<app>`). This resolves the error "bucket name contains invalid characters."
+
+- **Make your backup when the service is stopped:**
+  Some YunoHost apps (like Synapse, Gitea, Seafile, Sogo, Monitorix and Xwiki) recommand to make your backup when the service is stopped. You can enable an option in Restic Config Panel to stop them automatically during the backup. If enabled, these apps won't be available for users during each backup.
+
+- **YunoHost Backup Method:**
+  Restic for YunoHost adds a [custom backup method](https://doc.yunohost.org/en/admin/backups/custom_backup_methods/) named `__APP___app`, which replaces the default "local" backup step with sending the backup to a remote server. This method is called for each saved content (configuration, data, media, and each application) as follows: `sudo yunohost backup create -n "auto_$application" --method __APP___app --apps "$application"`. To manually trigger a backup with Restic, we recommend using `systemctl start restic`. This command will automatically use the custom method, applying the configuration you set during installation or in the **Config Panel**. If you use the custom backup method directly, you must specify what you want to back up. The `-n` flag is undocumented but required to determine where your backup will be stored on the remote server.

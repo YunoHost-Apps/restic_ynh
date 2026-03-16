@@ -116,6 +116,13 @@ name.fr = "Paramètres de Restic"
         help.fr = "Options Restic forget pour nettoyer les anciennes sauvegardes. Par exemple : --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --keep-yearly 2"
         default = "--keep-daily 7 --keep-weekly 4 --keep-monthly 6 --keep-yearly 2"
 
+        [main.advanced.stop_apps]
+        ask.en = "Stop apps before backup"
+        ask.fr = "Eteindre les applications avant la sauvegarde"
+        help.en = "Some applications recommand to be stopped to be backed up (Synapse, Gitea, Seafile, Sogo, Monitorix, Xwiki)"
+        help.fr = "Il est recommandé d'éteindre certaines applications avant de les sauvegarder (Synapse, Gitea, Seafile, Sogo, Monitorix, Xwiki)"
+        type = "boolean"
+
     [main.actions]
     name = "Actions"
     optional = true

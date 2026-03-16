@@ -75,6 +75,7 @@ if [[ "$forget_policy" = "" ]]; then
     ynh_app_setting_set --key=forget_policy --value="--keep-daily 7 --keep-weekly 8 --keep-monthly 12"
 fi
 
+ynh_app_setting_set_default --key=stop_apps --value=0
 ynh_app_setting_set_default --key=backup_core_only --value=0
 
 #=================================================
