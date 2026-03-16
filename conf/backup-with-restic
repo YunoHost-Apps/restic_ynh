@@ -113,7 +113,7 @@ done
 critical_errors="$(grep -iE "Error|Skipped|Fatal|Fail" "$log_file")"
 
 # Détection des warnings
-warnings="$(grep -iE "Warning" "$log_file" | grep -v "backup 'systemctl stop")"
+warnings="$(grep -iE "Warning" "$log_file")"
 
 # Send mail on backup (partially) failed
 domain=$(hostname)
