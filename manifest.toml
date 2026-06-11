@@ -7,7 +7,7 @@ name = "Restic"
 description.en = "Regularly create encrypted backups sent to another server using Restic"
 description.fr = "Créez régulièrement des sauvegardes chiffrées envoyées sur un autre serveur avec Restic"
 
-version = "0.18.1~ynh3"
+version = "0.19.0~ynh1"
 
 maintainers = ["Gildas-GH"]
 
@@ -76,14 +76,14 @@ ram.runtime = "50M"
 
 [resources]
     [resources.sources.main]
-    amd64.url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_amd64.bz2"
-    amd64.sha256 = "680838f19d67151adba227e1570cdd8af12c19cf1735783ed1ba928bc41f363d"
-    i386.url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_386.bz2"
-    i386.sha256 = "b6c4b3dc507ac8df840b5611ada36134fa2208a2941be3376096137712659f81"
-    arm64.url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_arm64.bz2"
-    arm64.sha256 = "87f53fddde38764095e9c058a3b31834052c37e5826d2acf34e18923c006bd45"
-    armhf.url = "https://github.com/restic/restic/releases/download/v0.18.1/restic_0.18.1_linux_arm.bz2"
-    armhf.sha256 = "1ead22ca3b123f11cd1ce74ba4079c324aa616efb25227c715471420a1c2a364"
+    amd64.url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_amd64.bz2"
+    amd64.sha256 = "13176fe6d89d4357947a2cd107218ab2873a5f9d8e1ac2d4cd1c8e07e6839c21"
+    i386.url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_386.bz2"
+    i386.sha256 = "0b58b04a7d2fffe290ed00ea841e97662af33296a2ba6abb52d4c62612b2e1e6"
+    arm64.url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_arm64.bz2"
+    arm64.sha256 = "e522ce6bf748d753fee8093e8ec59359972cf5b6bc65fc7c7cf38ae952351d91"
+    armhf.url = "https://github.com/restic/restic/releases/download/v0.19.0/restic_0.19.0_linux_arm.bz2"
+    armhf.sha256 = "2997e6ebd953a551abe33172876ce1a88aa1bb29a93425b167747ece7a38c850"
 
     autoupdate.strategy = "latest_github_release"
     autoupdate.asset.amd64 = ".*linux_amd64.bz2"
